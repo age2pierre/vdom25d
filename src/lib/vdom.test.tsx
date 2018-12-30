@@ -115,10 +115,11 @@ describe('VNode creation', () => {
     const node = <Thunk arg={7} />
     expect(node).toEqual(
       Map({
-        type: 'thunk',
-        fn: Thunk,
+        type: 'native',
+        tagName: 'box',
         attributes: Map({
-          arg: 7,
+          x: 7,
+          y: 7,
         }),
         key: undefined,
         children: List(),

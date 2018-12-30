@@ -1,7 +1,7 @@
 import { List, Map } from 'immutable'
 import { ImmutableMap } from './immutablemap'
 
-export type VNode = VNative | VThunk | VEmpty | VText
+export type VNode = VNative | VEmpty | VText
 
 export interface VNative
   extends ImmutableMap<{
@@ -14,19 +14,6 @@ export interface VNative
 
 export function isVNative(arg: any): arg is VNative {
   return arg.type === 'native'
-}
-
-export interface VThunk
-  extends ImmutableMap<{
-    type: 'thunk'
-    fn: Function
-    attributes?: Map<string, any>
-    key?: string
-    children?: List<VNode>
-  }> {}
-
-export function isVThunk(arg: any): arg is VThunk {
-  return arg.type === 'thunk'
 }
 
 export interface VText
@@ -60,6 +47,10 @@ export function h(
   attributesArg?: Attributes,
   ...childrenArray: Array<Children>
 ): VNode {
+  if (tag instanceof Function) {
+    return tag(attributesArg)
+  }
+
   let key = undefined
   if (attributesArg) {
     key = attributesArg.key ? attributesArg.key : undefined
@@ -68,23 +59,13 @@ export function h(
 
   const children = childrenArray.reduce(reduceChildren, List())
 
-  if (tag instanceof Function) {
-    return Map({
-      type: 'thunk',
-      fn: tag,
-      attributes: attributesArg ? Map(attributesArg) : undefined,
-      key,
-      children,
-    })
-  } else {
-    return Map({
-      type: 'native',
-      tagName: tag,
-      attributes: attributesArg ? Map(attributesArg) : undefined,
-      key,
-      children,
-    })
-  }
+  return Map({
+    type: 'native',
+    tagName: tag,
+    attributes: attributesArg ? Map(attributesArg) : undefined,
+    key,
+    children,
+  })
 }
 
 function reduceChildren(children: List<VNode>, child: Children): List<VNode> {
