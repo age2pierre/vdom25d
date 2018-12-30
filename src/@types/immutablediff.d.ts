@@ -6,8 +6,8 @@ declare module 'immutable-diff' {
   }
 
   export default function diff(
-    a: Map<any, any> | List<any> | Set<any>,
-    b: Map<any, any> | List<any> | Set<any>,
+    prev: Map<any, any> | List<any> | Set<any>,
+    next: Map<any, any> | List<any> | Set<any>,
   ): List<
     ImmutableMap<{
       op: 'add' | 'remove' | 'replace'

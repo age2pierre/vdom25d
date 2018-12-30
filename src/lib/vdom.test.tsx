@@ -128,7 +128,7 @@ describe('VNode creation', () => {
   })
 })
 
-describe('VNode diffing', () => {
+describe.skip('VNode diffing', () => {
   const node1 = <box x={2} y={2} />
   const node2 = <box x={3} y={3} />
 
@@ -142,13 +142,25 @@ describe('VNode diffing', () => {
 
   const node3 = (
     <box x={1} y={1}>
-      <box x={2} y={2} />
+      <box key="child1" x={2} y={2} />
     </box>
   )
   const node4 = (
     <box x={1} y={1}>
-      <box x={2} y={2} />
-      <box x={3} y={3} />
+      <box key="child1" x={2} y={2} />
+      <box key="child2" x={3} y={3} />
+    </box>
+  )
+  const node5 = (
+    <box x={1} y={1}>
+      <box key="child1" x={2} y={2} />
+      <group key="child3" />
+    </box>
+  )
+  const node6 = (
+    <box x={1} y={1}>
+      <box key="child1" x={2} y={2} />
+      {null}
     </box>
   )
   test('Add child', () => {
@@ -162,6 +174,51 @@ describe('VNode diffing', () => {
     const op = diff(node4, node3)
     expect(op).toEqual(
       List([Map({ op: 'remove', path: List(['children', 1]) })]),
+    )
+  })
+
+  test('Replace child', () => {
+    const op = diff(node4, node5)
+    expect(op.toJS()).toEqual([
+      {
+        op: 'replace',
+        path: ['children', 1, 'tagName'],
+        value: 'group',
+      },
+      {
+        op: 'replace',
+        path: ['children', 1, 'key'],
+        value: 'child3',
+      },
+      {
+        op: 'replace',
+        path: ['children', 1, 'attributes'],
+        value: undefined,
+      },
+    ])
+  })
+
+  test('Replace child with empty', () => {
+    const op = diff(node4, node6)
+    expect(op.toJS()).toEqual([{}, {}])
+  })
+
+  test('Create root', () => {
+    const op = diff(null as any, <group />)
+    expect(op).toEqual(
+      List([
+        Map({
+          op: 'replace',
+          path: List([]),
+          value: Map({
+            type: 'native',
+            tagName: 'group',
+            attributes: undefined,
+            key: undefined,
+            children: List(),
+          }),
+        }),
+      ]),
     )
   })
 })
