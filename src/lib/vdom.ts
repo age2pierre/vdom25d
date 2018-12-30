@@ -1,39 +1,40 @@
-import { List, Map } from 'immutable'
-import { ImmutableMap } from './immutablemap'
+import { List, Map, Record } from 'immutable'
 
 export type VNode = VNative | VEmpty | VText
 
-export interface VNative
-  extends ImmutableMap<{
-    type: 'native'
-    tagName: string
-    attributes?: Map<any, any>
-    key?: string
-    children?: List<VNode>
-  }> {}
+type VNodeTypes = 'native' | 'empty' | 'text'
 
-export function isVNative(arg: any): arg is VNative {
-  return arg.type === 'native'
+interface VNodeBase {
+  type: VNodeTypes
 }
 
-export interface VText
-  extends ImmutableMap<{
-    type: 'text'
-    value: string | number
-  }> {}
-
-export function isVText(arg: any): arg is VText {
-  return arg.type === 'text'
+interface VNativeBase extends VNodeBase {
+  type: 'native'
+  tagName: string | undefined
+  attributes: Map<string, any>
+  key: string | number | undefined
+  children: List<VNode>
 }
+export class VNative extends Record<VNativeBase>({
+  type: 'native',
+  tagName: undefined,
+  attributes: Map({}),
+  key: undefined,
+  children: List<VNode>(),
+}) {}
 
-export interface VEmpty
-  extends ImmutableMap<{
-    type: 'empty'
-  }> {}
-
-export function isVEmpty(arg: any): arg is VEmpty {
-  return arg.type === 'empty'
+interface VTextBase extends VNodeBase {
+  type: 'text'
+  value: string | number | undefined
 }
+export class VText extends Record<VTextBase>({
+  type: 'text',
+  value: undefined,
+}) {}
+
+export class VEmpty extends Record<VNodeBase>({
+  type: 'empty',
+}) {}
 
 type Children = VNode | number | string | null | ChildrenArray
 interface ChildrenArray extends Array<Children> {}
@@ -59,8 +60,7 @@ export function h(
 
   const children = childrenArray.reduce(reduceChildren, List())
 
-  return Map({
-    type: 'native',
+  return new VNative({
     tagName: tag,
     attributes: attributesArg ? Map(attributesArg) : undefined,
     key,
@@ -71,21 +71,16 @@ export function h(
 function reduceChildren(children: List<VNode>, child: Children): List<VNode> {
   if (typeof child === 'string' || typeof child === 'number') {
     return children.push(
-      Map({
-        type: 'text',
+      new VText({
         value: child,
       }),
     )
   } else if (child === null) {
-    return children.push(
-      Map({
-        type: 'empty',
-      }),
-    )
+    return children.push(new VEmpty())
   } else if (child instanceof Array) {
     return children.concat(child.reduce(reduceChildren, List()))
   } else if (typeof child === 'undefined') {
-    throw new Error(`Vnode can't be undefined. Did you mean to use null?`)
+    throw new Error(`VNode can't be undefined. Did you mean to use null?`)
   } else {
     return children.push(child)
   }
