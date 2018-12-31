@@ -4,6 +4,8 @@ export type VNode = VNative | VEmpty | VText
 
 type VNodeTypes = 'native' | 'empty' | 'text'
 
+export type Attributes = Map<string, any>
+
 interface VNodeBase {
   type: VNodeTypes
 }
@@ -11,7 +13,7 @@ interface VNodeBase {
 interface VNativeBase extends VNodeBase {
   type: 'native'
   tagName: string | undefined
-  attributes: Map<string, any>
+  attributes: Attributes
   key: string | number | undefined
   children: List<VNode>
 }
@@ -32,20 +34,23 @@ export class VText extends Record<VTextBase>({
   value: undefined,
 }) {}
 
-export class VEmpty extends Record<VNodeBase>({
+interface VEmptyBase extends VNodeBase {
+  type: 'empty'
+}
+export class VEmpty extends Record<VEmptyBase>({
   type: 'empty',
 }) {}
 
 type Children = VNode | number | string | null | ChildrenArray
 interface ChildrenArray extends Array<Children> {}
-type Attributes = {
+type AttributesJS = {
   key?: string | number
   [k: string]: any
 }
 
 export function h(
   tag: string | Function,
-  attributesArg?: Attributes,
+  attributesArg?: AttributesJS,
   ...childrenArray: Array<Children>
 ): VNode {
   if (tag instanceof Function) {
@@ -84,4 +89,15 @@ function reduceChildren(children: List<VNode>, child: Children): List<VNode> {
   } else {
     return children.push(child)
   }
+}
+
+export function createPath(...args: (string | number)[]) {
+  return args.join('.')
+}
+
+export function groupByKey(children: List<VNode>) {
+  return children.groupBy((node, index) => {
+    const key = node.type === 'native' ? node.key : null
+    return key || index
+  })
 }

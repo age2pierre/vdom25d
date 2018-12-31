@@ -61,7 +61,7 @@ describe('Immutable.Map diff operations', () => {
 })
 
 describe('VNode creation', () => {
-  test('native element without children', () => {
+  test('native node without children', () => {
     const node = <box x={1} y={2} />
     expect(node).toEqual(
       new VNative({
@@ -77,10 +77,11 @@ describe('VNode creation', () => {
     )
   })
 
-  test('native element with children', () => {
+  test('native node with children', () => {
     const node = (
       <box x={3} y={4}>
-        <box x={5} y={6} />
+        <box x={5} y={6} key="child1" />
+        <box x={5} y={6} key="child2" />
       </box>
     )
     expect(node).toEqual(
@@ -100,7 +101,17 @@ describe('VNode creation', () => {
               x: 5,
               y: 6,
             }),
-            key: undefined,
+            key: 'child1',
+            children: List(),
+          }),
+          new VNative({
+            type: 'native',
+            tagName: 'box',
+            attributes: Map({
+              x: 5,
+              y: 6,
+            }),
+            key: 'child2',
             children: List(),
           }),
         ]),
@@ -108,7 +119,7 @@ describe('VNode creation', () => {
     )
   })
 
-  test('Thunk element', () => {
+  test('Thunk node should be converted to native node', () => {
     const Thunk = (props: { arg: number }) => (
       <box x={props.arg} y={props.arg} />
     )
@@ -128,97 +139,10 @@ describe('VNode creation', () => {
   })
 })
 
-// describe.skip('VNode diffing', () => {
-//   const node1 = <box x={2} y={2} />
-//   const node2 = <box x={3} y={3} />
-
-//   test('Update props', () => {
-//     const op = diff(node1, node2)
-//     expect(op.toJS()).toEqual([
-//       { op: 'replace', path: ['attributes', 'x'], value: 3 },
-//       { op: 'replace', path: ['attributes', 'y'], value: 3 },
-//     ])
-//   })
-
-//   const node3 = (
-//     <box x={1} y={1}>
-//       <box key="child1" x={2} y={2} />
-//     </boxMap>
-//   )
-//   const node4 = (
-//     <box x={1} y={1}>
-//       <box key="child1" x={2} y={2} />
-//       <box key="child2" x={3} y={3} />
-//     </box>
-//   )
-//   const node5 = (
-//     <box x={1} y={1}>
-//       <box key="child1" x={2} y={2} />
-//       <group key="child3" />
-//     </box>
-//   )
-//   const node6 = (
-//     <box x={1} y={1}>
-//       <box key="child1" x={2} y={2} />
-//       {null}
-//     </box>
-//   )
-//   test('Add child', () => {
-//     const op = diff(node3, node4)
-//     expect(op).toEqual(
-//       List([Map({ op: 'add', path: List(['children', 1]), value: node2 })]),
-//     )
-//   })
-
-//   test('Remove child', () => {
-//     const op = diff(node4, node3)
-//     expect(op).toEqual(
-//       List([Map({ op: 'remove', path: List(['children', 1]) })]),
-//     )
-//   })
-
-//   test('Replace child', () => {
-//     const op = diff(node4, node5)
-//     expect(op.toJS()).toEqual([
-//       {
-//         op: 'replace',
-//         path: ['children', 1, 'tagName'],
-//         value: 'group',
-//       },
-//       {
-//         op: 'replace',
-//         path: ['children', 1, 'key'],
-//         value: 'child3',
-//       },
-//       {
-//         op: 'replace',
-//         path: ['children', 1, 'attributes'],
-//         value: undefined,
-//       },
-//     ])
-//   })
-
-//   test('Replace child with empty', () => {
-//     const op = diff(node4, node6)
-//     expect(op.toJS()).toEqual([{}, {}])
-//   })
-
-//   test('Create root', () => {
-//     const op = diff(null as any, <group />)
-//     expect(op).toEqual(
-//       List([
-//         Map({
-//           op: 'replace',
-//           path: List([]),
-//           value: Map({
-//             type: 'native',
-//             tagName: 'group',
-//             attributes: undefined,
-//             key: undefined,
-//             children: List(),
-//           }),
-//         }),
-//       ]),
-//     )
-//   })
+// describe.skip('group by key', () => {
+//   const children1 = List([
+//     <box x={1} y={1} key="child1" />,
+//     <box x={1} y={1} />,
+//   ])
+//   const children2 = List([<box x={1} y={1} />, <box x={1} y={1} />])
 // })

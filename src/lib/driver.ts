@@ -12,9 +12,8 @@ import 'babylonjs-materials'
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
 import clock from './clock'
-import diffnode from './diffnode'
 import keyboard from './keyboard'
-import { VNode } from './vdom'
+import { VEmpty, VNode } from './vdom'
 
 // Up         0  1  0
 // Down       0 -1  0
@@ -26,6 +25,10 @@ import { VNode } from './vdom'
 export interface GridCoord {
   x: number
   y: number
+}
+
+export interface Context {
+  scene: Scene
 }
 
 const XYPlane = new Plane(0, 0, 1, 0)
@@ -71,13 +74,6 @@ const skyboxFactory = (scene: Scene) => {
   return skybox
 }
 
-const boxFactory = (scene: Scene, x = 0, y = 0) => {
-  const box = Mesh.CreateBox('box', 1, scene)
-  box.isPickable = true
-  box.position.x = x
-  box.position.y = y
-}
-
 export default (idContainer = 'renderCanvas') => {
   const engine = new Engine(document.getElementById(
     idContainer,
@@ -87,6 +83,9 @@ export default (idContainer = 'renderCanvas') => {
   const camera = cameraFactory(scene)
   const grid = gridFactory(scene)
   const skybox = skyboxFactory(scene)
+  const context: Context = {
+    scene,
+  }
 
   window.addEventListener('resize', () => {
     engine.resize()
@@ -110,16 +109,14 @@ export default (idContainer = 'renderCanvas') => {
   return {
     sink: (vdom$: Stream<VNode>): void => {
       vdom$.fold(
-        ({ scene, root: prevRoot }, nextRoot) => {
-          const ops = diffnode(prevRoot, nextRoot)
-          // patch scene tree
-          scene.render()
+        ({ context, root: prevRoot }, nextRoot) => {
+          context.scene.render()
           const root = nextRoot
-          return { scene, root }
+          return { context, root }
         },
         {
-          scene,
-          root: (null as unknown) as VNode,
+          context,
+          root: new VEmpty() as VNode,
         },
       )
     },

@@ -10,8 +10,15 @@ declare global {
     type Element = VNode
 
     interface IntrinsicElements {
+      //for test purposes only
       box: GridCoord & NodeData
       group: NodeData
+
+      //previosionnal api
+      stage: NodeData
+      entity: NodeData
+      mesh: NodeData
+      sensor: NodeData
     }
   }
 }
