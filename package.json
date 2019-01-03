@@ -22,10 +22,12 @@
     }
   },
   "dependencies": {
+    "@types/matter-js": "^0.10.2",
     "babylonjs": "^4.0.0-alpha.11",
     "babylonjs-materials": "^4.0.0-alpha.11",
     "immutable": "^4.0.0-rc.12",
     "immutable-diff": "^0.1.1",
+    "matter-js": "^0.14.2",
     "rxjs": "^6.3.3",
     "xstream": "^11.7.0"
   },
