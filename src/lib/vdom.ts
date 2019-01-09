@@ -23,7 +23,11 @@ export class VNative extends Record<VNativeBase>({
   attributes: Map({}),
   key: undefined,
   children: List<VNode>(),
-}) {}
+}) {
+  constructor(arg: Partial<VNativeBase>) {
+    super(arg)
+  }
+}
 
 interface VTextBase extends VNodeBase {
   type: 'text'
@@ -32,14 +36,22 @@ interface VTextBase extends VNodeBase {
 export class VText extends Record<VTextBase>({
   type: 'text',
   value: undefined,
-}) {}
+}) {
+  constructor(arg: Partial<VTextBase>) {
+    super(arg)
+  }
+}
 
 interface VEmptyBase extends VNodeBase {
   type: 'empty'
 }
 export class VEmpty extends Record<VEmptyBase>({
   type: 'empty',
-}) {}
+}) {
+  constructor() {
+    super()
+  }
+}
 
 type Children = VNode | number | string | null | ChildrenArray
 interface ChildrenArray extends Array<Children> {}
@@ -96,8 +108,13 @@ export function createPath(...args: (string | number)[]) {
 }
 
 export function groupByKey(children: List<VNode>) {
-  return children.groupBy((node, index) => {
-    const key = node.type === 'native' ? node.key : null
-    return key || index
-  })
+  return children
+    .map((node, index) => ({
+      node,
+      index,
+    }))
+    .groupBy(item => {
+      const key = item.node.type === 'native' ? item.node.key : null
+      return key || item.index
+    })
 }
