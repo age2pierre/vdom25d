@@ -1,5 +1,5 @@
 {
-  "name": "two-and-half-d",
+  "name": "vdom25d",
   "version": "1.0.0",
   "description": "A functional reactive game (framework ?) in the browser",
   "main": "src/index.ts",
