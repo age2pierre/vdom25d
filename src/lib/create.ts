@@ -14,8 +14,8 @@ export function createElement(node: VNode, path: string, context: Context) {
   }
 }
 
-function createNativeElement(node: VNative, path: string, context: Context) {
-  const { tagName, attributes, children } = node
+function createNativeElement(vnode: VNative, path: string, context: Context) {
+  const { tagName, attributes, children } = vnode
   let el: Node
   if (tagName === 'box') {
     const props = attributes as ImmutableMap<GridCoord>

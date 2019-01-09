@@ -93,7 +93,7 @@ export default (idContainer = 'renderCanvas') => {
 
   const pick = xs.create<GridCoord>({
     start: listener => {
-      scene.onPointerDown = function(_, pickResult) {
+      scene.onPointerDown = (_, pickResult) => {
         // if the click hits the grid object, we emit event
         if (pickResult.hit && pickResult.pickedMesh === grid) {
           listener.next({
@@ -103,14 +103,16 @@ export default (idContainer = 'renderCanvas') => {
         }
       }
     },
-    stop: () => {},
+    stop: () => {
+      return
+    },
   })
 
   return {
     sink: (vdom$: Stream<VNode>): void => {
       vdom$.fold(
-        ({ context, root: prevRoot }, nextRoot) => {
-          context.scene.render()
+        (acc, nextRoot) => {
+          acc.context.scene.render()
           const root = nextRoot
           return { context, root }
         },

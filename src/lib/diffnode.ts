@@ -31,7 +31,9 @@ export class RemoveNode {
   constructor(readonly prevNode: VNode) {}
 }
 export class SameNode {
-  constructor() {}
+  constructor() {
+    return
+  }
 }
 export class UpdateThunk {
   constructor(
@@ -55,7 +57,7 @@ export function diffNode(
   prev: VNode | undefined,
   next: VNode | undefined,
   path: string,
-): Array<DiffActions> {
+): DiffActions[] {
   if (prev === next) {
     return [new SameNode()]
   }
@@ -72,7 +74,7 @@ export function diffNode(
     if (prev.tagName !== next.tagName) {
       return [new ReplaceNode(prev, next, path)]
     }
-    const actions: Array<DiffActions> = diffAttributes(prev, next)
+    const actions: DiffActions[] = diffAttributes(prev, next)
     if (prev.children !== next.children) {
       return actions.concat(new UpdateChildren(diffChildren(prev, next, path)))
     }
@@ -130,13 +132,15 @@ export function diffChildren(
   )
 
   setOfKey.forEach(key => {
-    const prev = prevChildrenByKey.get(key)
-    const prevNode = prev ? safe(prev.get(0)).node : undefined
+    const prevGroup = prevChildrenByKey.get(key)
+    const prevNode = prevGroup ? safe(prevGroup.get(0)).node : undefined
 
-    const next = nextChildrenByKey.get(key)
-    const nextNode = next ? safe(next.get(0)).node : undefined
+    const nextGroup = nextChildrenByKey.get(key)
+    const nextNode = nextGroup ? safe(nextGroup.get(0)).node : undefined
 
-    const index = prev ? safe(prev.get(0)).index : safe(safe(next).get(0)).index
+    const index = prevGroup
+      ? safe(prevGroup.get(0)).index
+      : safe(safe(nextGroup).get(0)).index
     const nextPath = createPath(parentPath, key)
 
     const childActions = diffNode(prevNode, nextNode, nextPath)

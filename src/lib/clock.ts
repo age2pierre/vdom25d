@@ -21,7 +21,7 @@ export default () => {
 
   return raf$.fold((prevState, time) => {
     return prevState.merge({
-      time: time,
+      time,
       delta: time - prevState.time,
     })
   }, initState)

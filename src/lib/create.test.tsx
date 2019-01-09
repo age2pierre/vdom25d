@@ -5,7 +5,8 @@ import range from './range'
 import { h } from './vdom'
 
 describe('element creation', () => {
-  let scene: Scene, context: Context
+  let scene: Scene
+  let context: Context
   const engine = new NullEngine()
   const Thunk = (props: { numchild: number }) => (
     <box x={0} y={0}>

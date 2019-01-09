@@ -12,18 +12,18 @@ import {
 import { Bodies, Body, Engine, IBodyDefinition, World } from 'matter-js'
 
 export class MatterJSPlugin implements IPhysicsEnginePlugin {
-  world: World
-  name: string = 'MatterJSPlugin'
-  private _engine: Engine
-  private _lastDelta = 1
-  private _timeStep = 16.666
+  public world: World
+  public name: string = 'MatterJSPlugin'
+  private engine: Engine
+  private lastDelta = 1
+  private timeStep = 16.666
 
-  constructor(private _useDeltaForWorldStep: boolean = true) {
-    this._engine = Engine.create()
-    this.world = this._engine.world
+  constructor(private useDeltaForWorldStep: boolean = true) {
+    this.engine = Engine.create()
+    this.world = this.engine.world
   }
 
-  setGravity(gravity: Vector3): void {
+  public setGravity(gravity: Vector3): void {
     this.world.gravity = {
       scale: 1,
       x: gravity.x,
@@ -31,24 +31,24 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     }
   }
 
-  setTimeStep(timeStep: number): void {
-    this._timeStep = timeStep
+  public setTimeStep(timeStep: number): void {
+    this.timeStep = timeStep
   }
 
-  getTimeStep(): number {
-    return this._timeStep
+  public getTimeStep(): number {
+    return this.timeStep
   }
 
-  executeStep(delta: number, impostors: PhysicsImpostor[]): void {
-    if (this._useDeltaForWorldStep) {
-      Engine.update(this._engine, delta, delta / this._lastDelta)
-      this._lastDelta = delta
+  public executeStep(delta: number, impostors: PhysicsImpostor[]): void {
+    if (this.useDeltaForWorldStep) {
+      Engine.update(this.engine, delta, delta / this.lastDelta)
+      this.lastDelta = delta
     } else {
-      Engine.update(this._engine, this._timeStep)
+      Engine.update(this.engine, this.timeStep)
     }
   }
 
-  applyImpulse(
+  public applyImpulse(
     impostor: PhysicsImpostor,
     force: Vector3,
     contactPoint: Vector3,
@@ -56,7 +56,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     this.applyForce(impostor, force, contactPoint)
   }
 
-  applyForce(
+  public applyForce(
     impostor: PhysicsImpostor,
     force: Vector3,
     contactPoint: Vector3,
@@ -74,7 +74,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     )
   }
 
-  generatePhysicsBody(impostor: PhysicsImpostor): void {
+  public generatePhysicsBody(impostor: PhysicsImpostor): void {
     if (impostor.parent) {
       if (impostor.physicsBody) {
         this.removePhysicsBody(impostor)
@@ -82,7 +82,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
       }
       return
     }
-    //should a new body be created for this impostor?
+    // should a new body be created for this impostor?
     if (impostor.isBodyInitRequired()) {
       const object = impostor.object
       const extendedSize = impostor.getObjectExtendSize()
@@ -117,27 +117,27 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     }
   }
 
-  removePhysicsBody(impostor: PhysicsImpostor): void {
+  public removePhysicsBody(impostor: PhysicsImpostor): void {
     throw new Error('Method not implemented.')
   }
 
-  generateJoint(joint: PhysicsImpostorJoint): void {
+  public generateJoint(joint: PhysicsImpostorJoint): void {
     throw new Error('Method not implemented.')
   }
 
-  removeJoint(joint: PhysicsImpostorJoint): void {
+  public removeJoint(joint: PhysicsImpostorJoint): void {
     throw new Error('Method not implemented.')
   }
 
-  isSupported(): boolean {
+  public isSupported(): boolean {
     throw new Error('Method not implemented.')
   }
 
-  setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void {
+  public setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void {
     throw new Error('Method not implemented.')
   }
 
-  setPhysicsBodyTransformation(
+  public setPhysicsBodyTransformation(
     impostor: PhysicsImpostor,
     newPosition: Vector3,
     newRotation: Quaternion,
@@ -145,61 +145,64 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     throw new Error('Method not implemented.')
   }
 
-  setLinearVelocity(
+  public setLinearVelocity(
     impostor: PhysicsImpostor,
     velocity: Nullable<Vector3>,
   ): void {
     throw new Error('Method not implemented.')
   }
 
-  setAngularVelocity(
+  public setAngularVelocity(
     impostor: PhysicsImpostor,
     velocity: Nullable<Vector3>,
   ): void {
     throw new Error('Method not implemented.')
   }
 
-  getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
+  public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
     throw new Error('Method not implemented.')
   }
 
-  getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
+  public getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {
     throw new Error('Method not implemented.')
   }
 
-  setBodyMass(impostor: PhysicsImpostor, mass: number): void {
+  public setBodyMass(impostor: PhysicsImpostor, mass: number): void {
     throw new Error('Method not implemented.')
   }
 
-  getBodyMass(impostor: PhysicsImpostor): number {
+  public getBodyMass(impostor: PhysicsImpostor): number {
     throw new Error('Method not implemented.')
   }
 
-  getBodyFriction(impostor: PhysicsImpostor): number {
+  public getBodyFriction(impostor: PhysicsImpostor): number {
     throw new Error('Method not implemented.')
   }
 
-  setBodyFriction(impostor: PhysicsImpostor, friction: number): void {
+  public setBodyFriction(impostor: PhysicsImpostor, friction: number): void {
     throw new Error('Method not implemented.')
   }
 
-  getBodyRestitution(impostor: PhysicsImpostor): number {
+  public getBodyRestitution(impostor: PhysicsImpostor): number {
     throw new Error('Method not implemented.')
   }
 
-  setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void {
+  public setBodyRestitution(
+    impostor: PhysicsImpostor,
+    restitution: number,
+  ): void {
     throw new Error('Method not implemented.')
   }
 
-  sleepBody(impostor: PhysicsImpostor): void {
+  public sleepBody(impostor: PhysicsImpostor): void {
     throw new Error('Method not implemented.')
   }
 
-  wakeUpBody(impostor: PhysicsImpostor): void {
+  public wakeUpBody(impostor: PhysicsImpostor): void {
     throw new Error('Method not implemented.')
   }
 
-  updateDistanceJoint(
+  public updateDistanceJoint(
     joint: PhysicsJoint,
     maxDistance: number,
     minDistance?: number | undefined,
@@ -207,7 +210,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     throw new Error('Method not implemented.')
   }
 
-  setMotor(
+  public setMotor(
     joint: IMotorEnabledJoint,
     speed: number,
     maxForce?: number | undefined,
@@ -216,7 +219,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     throw new Error('Method not implemented.')
   }
 
-  setLimit(
+  public setLimit(
     joint: IMotorEnabledJoint,
     upperLimit: number,
     lowerLimit?: number | undefined,
@@ -225,19 +228,22 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     throw new Error('Method not implemented.')
   }
 
-  getRadius(impostor: PhysicsImpostor): number {
+  public getRadius(impostor: PhysicsImpostor): number {
     throw new Error('Method not implemented.')
   }
 
-  getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
+  public getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void {
     throw new Error('Method not implemented.')
   }
 
-  syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void {
+  public syncMeshWithImpostor(
+    mesh: AbstractMesh,
+    impostor: PhysicsImpostor,
+  ): void {
     throw new Error('Method not implemented.')
   }
 
-  dispose(): void {
+  public dispose(): void {
     throw new Error('Method not implemented.')
   }
 }

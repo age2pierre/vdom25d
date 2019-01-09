@@ -5,16 +5,13 @@
   "main": "src/index.ts",
   "author": "age2pierre",
   "license": "MIT",
-  "private": false,
+  "private": true,
   "scripts": {
-    "develop": "concurrently -r \"npm:type-check:watch\" \"npm:start\"",
     "start": "parcel ./src/index.html",
     "build": "npm run type-check && parcel build ./src/index.html --public-url '/'",
     "prettify": "prettier --write './src/**/*.{ts,tsx,html}'",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch"
+    "lint": "tslint -c tslint.json --fix 'src/**/*.{ts,tsx}'"
   },
   "dependencies": {
     "@types/matter-js": "^0.10.2",

@@ -55,21 +55,22 @@ export class VEmpty extends Record<VEmptyBase>({
 
 type Children = VNode | number | string | null | ChildrenArray
 interface ChildrenArray extends Array<Children> {}
-type AttributesJS = {
+interface AttributesJS {
   key?: string | number
   [k: string]: any
 }
 
 export function h(
+  // tslint:disable-next-line:ban-types
   tag: string | Function,
   attributesArg?: AttributesJS,
-  ...childrenArray: Array<Children>
+  ...childrenArray: Children[]
 ): VNode {
   if (tag instanceof Function) {
     return tag(attributesArg)
   }
 
-  let key = undefined
+  let key
   if (attributesArg) {
     key = attributesArg.key ? attributesArg.key : undefined
     delete attributesArg.key
@@ -103,7 +104,7 @@ function reduceChildren(children: List<VNode>, child: Children): List<VNode> {
   }
 }
 
-export function createPath(...args: (string | number)[]) {
+export function createPath(...args: Array<string | number>) {
   return args.join('.')
 }
 

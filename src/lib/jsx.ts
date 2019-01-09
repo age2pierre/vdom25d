@@ -10,11 +10,11 @@ declare global {
     type Element = VNode
 
     interface IntrinsicElements {
-      //for test purposes only
+      // for test purposes only
       box: GridCoord & NodeData
       group: NodeData
 
-      //previosionnal api
+      // previosionnal api
       stage: NodeData
       entity: NodeData
       mesh: NodeData
