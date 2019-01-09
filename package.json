@@ -16,11 +16,6 @@
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run prettify && npm run test"
-    }
-  },
   "dependencies": {
     "@types/matter-js": "^0.10.2",
     "babylonjs": "^4.0.0-alpha.11",
@@ -34,7 +29,6 @@
   },
   "devDependencies": {
     "@types/jest": "^23.3.10",
-    "husky": "^1.2.0",
     "jest": "^23.6.0",
     "parcel": "^1.10.3",
     "prettier": "^1.15.3",
