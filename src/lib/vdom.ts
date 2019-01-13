@@ -1,148 +1,171 @@
-import { List, Map, Record } from 'immutable'
 import { Context } from './driver'
 
 export type VNode = VNative | VEmpty | VText | VThunk<any>
 
 type VNodeTypes = 'native' | 'empty' | 'text' | 'thunk'
 
-export type Attributes = Map<string, any>
+interface AttributesJS {
+  readonly [k: string]: any
+  readonly key?: string | number
+}
+
+interface Attributes {
+  readonly [k: string]: any
+}
 
 interface VNodeBase {
-  type: VNodeTypes
+  readonly type: VNodeTypes
 }
 
-interface VNativeBase extends VNodeBase {
-  type: 'native'
-  tagName: string | undefined
-  attributes: Attributes
-  key: string | number | undefined
-  children: List<VNode>
+export interface VNative extends VNodeBase {
+  readonly type: 'native'
+  readonly tagName: string | undefined
+  readonly attributes: Attributes
+  readonly key: string | undefined
+  readonly children: ReadonlyArray<VNode>
 }
-export class VNative extends Record<VNativeBase>({
-  type: 'native',
-  tagName: undefined,
-  attributes: Map({}),
-  key: undefined,
-  children: List<VNode>(),
-}) {
-  constructor(arg: Partial<VNativeBase>) {
-    super(arg)
+export function VNative(arg: Partial<VNative>): VNative {
+  return {
+    type: 'native',
+    tagName: undefined,
+    attributes: {},
+    key: undefined,
+    children: [],
+    ...arg,
   }
 }
-
-interface VTextBase extends VNodeBase {
-  type: 'text'
-  value: string | number | undefined
+export function isVNative(arg: any): arg is VNative {
+  return arg && arg.type === 'native'
 }
-export class VText extends Record<VTextBase>({
-  type: 'text',
-  value: undefined,
-}) {
-  constructor(arg: Partial<VTextBase>) {
-    super(arg)
+
+export interface VText extends VNodeBase {
+  readonly type: 'text'
+  readonly value: string | number | undefined
+}
+export function VText(arg: Partial<VText>): VText {
+  return {
+    type: 'text',
+    value: undefined,
+    ...arg,
   }
 }
-
-interface VThunkBase<Props extends AttributesJS> extends VNodeBase {
-  type: 'thunk'
-  fn: (props: Props, context?: Context) => VNode
-  props: Map<keyof Props, any>
-  key: string | number | undefined
-  children: List<VNode>
+export function isVText(arg: any): arg is VText {
+  return arg && arg.type === 'text'
 }
 
-export class VThunk<Props> extends Record<VThunkBase<any>>({
-  type: 'thunk',
-  fn: () => {
-    return new VEmpty()
-  },
-  props: Map(),
-  key: undefined,
-  children: List<VNode>(),
-}) {
-  constructor(arg: Partial<VThunkBase<Props>>) {
-    super(arg)
+export interface VThunk<Props extends Attributes> extends VNodeBase {
+  readonly type: 'thunk'
+  readonly fn: (props: Props, context?: Context) => VNode
+  readonly props: Props
+  readonly key: string | undefined
+  readonly children: ReadonlyArray<VNode>
+}
+export function VThunk<Props>(arg: Partial<VThunk<any>>): VThunk<Props> {
+  return {
+    type: 'thunk',
+    fn: () => {
+      return VEmpty()
+    },
+    props: {},
+    key: undefined,
+    children: [],
+    ...arg,
   }
 }
-
-interface VEmptyBase extends VNodeBase {
-  type: 'empty'
+export function isVThunk(arg: any): arg is VThunk<any> {
+  return arg && arg.type === 'thunk'
 }
-export class VEmpty extends Record<VEmptyBase>({
-  type: 'empty',
-}) {
-  constructor() {
-    super()
+
+export interface VEmpty extends VNodeBase {
+  readonly type: 'empty'
+}
+export function VEmpty(): VEmpty {
+  return {
+    type: 'empty',
   }
+}
+export function isVEmpty(arg: any): arg is VEmpty {
+  return arg && arg.type === 'empty'
 }
 
 type Children = VNode | number | string | null | ChildrenArray
 interface ChildrenArray extends Array<Children> {}
-interface AttributesJS {
-  key?: string | number
-  [k: string]: any
-}
 
 export function h(
   tag: string | ((props: any) => VNode),
   attributesArg?: AttributesJS,
   ...childrenArray: Children[]
 ): VNode {
-  let key
-  if (attributesArg) {
-    key = attributesArg.key ? attributesArg.key : undefined
-    delete attributesArg.key
-  }
-
-  const children = childrenArray.reduce(reduceChildren, List())
+  const { key, ...attributes } = attributesArg
+    ? attributesArg
+    : { key: undefined }
+  const children = childrenArray.reduce(reduceChildren, [])
 
   if (tag instanceof Function) {
-    return new VThunk({
+    return VThunk({
       fn: tag,
-      props: attributesArg ? Map(attributesArg) : undefined,
-      key,
+      props: attributes,
+      key: String(key),
       children,
     })
   }
 
-  return new VNative({
+  return VNative({
     tagName: tag,
-    attributes: attributesArg ? Map(attributesArg) : undefined,
-    key,
+    attributes,
+    key: String(key),
     children,
   })
 }
 
-function reduceChildren(children: List<VNode>, child: Children): List<VNode> {
+function reduceChildren(
+  children: ReadonlyArray<VNode>,
+  child: Children,
+): VNode[] {
   if (typeof child === 'string' || typeof child === 'number') {
-    return children.push(
-      new VText({
+    return children.concat(
+      VText({
         value: child,
       }),
     )
   } else if (child === null) {
-    return children.push(new VEmpty())
+    return children.concat(VEmpty())
   } else if (child instanceof Array) {
-    return children.concat(child.reduce(reduceChildren, List()))
+    return children.concat(child.reduce(reduceChildren, []))
   } else if (typeof child === 'undefined') {
     throw new Error(`VNode can't be undefined. Did you mean to use null?`)
   } else {
-    return children.push(child)
+    return children.concat(child)
   }
 }
 
-export function createPath(...args: Array<string | number>) {
+export function createPath(...args: Array<string | number>): string {
   return args.join('.')
 }
 
-export function groupByKey(children: List<VNode>) {
+export interface GroupedNodes {
+  // tslint:disable-next-line:readonly-keyword
+  [key: string]: {
+    readonly node: VNode
+    readonly index: number
+  }
+}
+export function groupByKey(children: ReadonlyArray<VNode>): GroupedNodes {
   return children
     .map((node, index) => ({
       node,
       index,
     }))
-    .groupBy(item => {
-      const key = item.node.type === 'native' ? item.node.key : null
-      return key || item.index
-    })
+    .reduce(
+      (mutableAcc, item) => {
+        const key = isVNative(item.node)
+          ? item.node.key
+            ? item.node.key
+            : item.index
+          : item.index
+        mutableAcc[key] = item
+        return mutableAcc
+      },
+      {} as GroupedNodes,
+    )
 }

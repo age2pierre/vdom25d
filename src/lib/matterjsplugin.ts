@@ -11,6 +11,7 @@ import {
 } from 'babylonjs'
 import { Bodies, Body, Engine, IBodyDefinition, World } from 'matter-js'
 
+// tslint:disable-next-line:no-class
 export class MatterJSPlugin implements IPhysicsEnginePlugin {
   public world: World
   public name: string = 'MatterJSPlugin'
@@ -39,7 +40,10 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
     return this.timeStep
   }
 
-  public executeStep(delta: number, impostors: PhysicsImpostor[]): void {
+  public executeStep(
+    delta: number,
+    impostors: ReadonlyArray<PhysicsImpostor>,
+  ): void {
     if (this.useDeltaForWorldStep) {
       Engine.update(this.engine, delta, delta / this.lastDelta)
       this.lastDelta = delta
@@ -92,7 +96,7 @@ export class MatterJSPlugin implements IPhysicsEnginePlugin {
         this.removePhysicsBody(impostor)
       }
 
-      let body: Body
+      const body: Body
       const options: IBodyDefinition = {
         friction: impostor.getParam('friction'),
         restitution: impostor.getParam('restitution'),

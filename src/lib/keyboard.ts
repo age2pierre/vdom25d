@@ -20,7 +20,7 @@ export default () => {
 
   return keys$
     .fold((prev, event) => {
-      let key: 'up' | 'down' | 'left' | 'right'
+      const key: 'up' | 'down' | 'left' | 'right'
       switch (event.keyCode) {
         case 90:
           key = 'up'

@@ -1,46 +1,58 @@
-import { Map, Set } from 'immutable'
-import diff from 'immutable-diff'
-import { createPath, groupByKey, VEmpty, VNative, VNode, VText } from './vdom'
+import {
+  createPath,
+  groupByKey,
+  isVNative,
+  isVText,
+  VEmpty,
+  VNative,
+  VNode,
+} from './vdom'
 
-export class SetAttribute {
-  constructor(
-    readonly key: string,
-    readonly nextValue: any,
-    readonly prevValue?: any, // FIXME: prevValue maynot be needed, check later or remove ?
-  ) {}
-}
-export class RemoveAttribute {
-  constructor(readonly key: string, readonly value: any) {}
-}
-export class InsertNode {
-  constructor(readonly child: VNode, readonly nextPath: string) {}
+export interface SetAttribute {
+  readonly action: 'set_attribute'
+  readonly key: string
+  readonly nextValue: any
+  readonly prevValue?: any // FIXME: prevValue maynot be needed, check later or remove ?
 }
 
-export type IndexedActions = Map<number, DiffActions[]>
-export class UpdateChildren {
-  constructor(readonly indexedActions: IndexedActions) {}
+export interface RemoveAttribute {
+  readonly action: 'remove_attribute'
+  readonly key: string
+  readonly value?: any
 }
-export class ReplaceNode {
-  constructor(
-    readonly prevNode: VNode,
-    readonly nextNode: VNode,
-    readonly path: string,
-  ) {}
+export interface InsertNode {
+  readonly action: 'insert_node'
+  readonly child: VNode
+  readonly nextPath: string
 }
-export class RemoveNode {
-  constructor(readonly prevNode: VNode) {}
+
+export interface IndexedActions {
+  // tslint:disable-next-line:readonly-keyword
+  [key: number]: ReadonlyArray<DiffActions>
 }
-export class SameNode {
-  constructor() {
-    return
-  }
+
+export interface UpdateChildren {
+  readonly action: 'update_chilren'
+  readonly indexedActions: IndexedActions
 }
-export class UpdateThunk {
-  constructor(
-    readonly prevNode: VNode,
-    readonly nextNode: VNode,
-    readonly path: string,
-  ) {}
+export interface ReplaceNode {
+  readonly action: 'replace_node'
+  readonly prevNode: VNode
+  readonly nextNode: VNode
+  readonly path: string
+}
+export interface RemoveNode {
+  readonly action: 'remove_node'
+  readonly prevNode: VNode
+}
+export interface SameNode {
+  readonly action: 'same_node'
+}
+export interface UpdateThunk {
+  readonly action: 'update_thunk'
+  readonly prevNode: VNode
+  readonly nextNode: VNode
+  readonly path: string
 }
 
 export type DiffActions =
@@ -57,32 +69,71 @@ export function diffNode(
   prev: VNode | undefined,
   next: VNode | undefined,
   path: string,
-): DiffActions[] {
+): ReadonlyArray<DiffActions> {
   if (prev === next) {
-    return [new SameNode()]
+    return [
+      {
+        action: 'same_node',
+      },
+    ]
   }
   if (prev !== undefined && next === undefined) {
-    return [new RemoveNode(prev)]
+    return [
+      {
+        action: 'remove_node',
+        prevNode: prev,
+      },
+    ]
   }
   if (prev === undefined && next !== undefined) {
-    return [new InsertNode(next, path)]
+    return [
+      {
+        action: 'insert_node',
+        child: next,
+        nextPath: path,
+      },
+    ]
   }
   if (prev !== undefined && next !== undefined && prev.type !== next.type) {
-    return [new ReplaceNode(prev, next, path)]
+    return [
+      {
+        action: 'replace_node',
+        prevNode: prev,
+        nextNode: next,
+        path,
+      },
+    ]
   }
-  if (next instanceof VNative && prev instanceof VNative) {
+  if (isVNative(next) && isVNative(prev)) {
     if (prev.tagName !== next.tagName) {
-      return [new ReplaceNode(prev, next, path)]
+      return [
+        {
+          action: 'replace_node',
+          prevNode: prev,
+          nextNode: next,
+          path,
+        },
+      ]
     }
-    const actions: DiffActions[] = diffAttributes(prev, next)
+    const actions: ReadonlyArray<DiffActions> = diffAttributes(prev, next)
     if (prev.children !== next.children) {
-      return actions.concat(new UpdateChildren(diffChildren(prev, next, path)))
+      return actions.concat({
+        action: 'update_chilren',
+        indexedActions: diffChildren(prev, next, path),
+      })
     }
     return actions
   }
-  if (next instanceof VText && prev instanceof VText) {
+  if (isVText(prev) && isVText(next)) {
     if (prev.value !== next.value) {
-      return [new SetAttribute('nodeValue', next.value, prev.value)]
+      return [
+        {
+          action: 'set_attribute',
+          key: 'nodeValue',
+          nextValue: next.value,
+          prevValue: prev.value,
+        },
+      ]
     } else {
       return []
     }
@@ -97,26 +148,38 @@ export function diffNode(
 export function diffAttributes(
   prev: VNative,
   next: VNative,
-): Array<SetAttribute | RemoveAttribute> {
-  const ops = diff(prev.attributes, next.attributes)
-  return ops
-    .map(op => {
-      switch (op.get('op')) {
-        case 'add':
-          return new SetAttribute(op.get('path').get(0), op.get('value'))
-        case 'replace':
-          return new SetAttribute(op.get('path').get(0), op.get('value'))
-        case 'remove':
-          return new RemoveAttribute(op.get('path').get(0), op.get('value'))
-        default:
-          throw new Error('Inexhaustive switch case')
-      }
-    })
-    .toArray()
-}
+): ReadonlyArray<SetAttribute | RemoveAttribute> {
+  const setOfKey = new Set([
+    ...Object.keys(prev.attributes),
+    ...Object.keys(next.attributes),
+  ])
 
-function safe<T>(x: T) {
-  return x as NonNullable<T>
+  const mutableOps: Array<SetAttribute | RemoveAttribute> = []
+
+  setOfKey.forEach(key => {
+    if (!(key in prev.attributes)) {
+      mutableOps.push({
+        action: 'set_attribute',
+        key,
+        nextValue: next.attributes[key],
+      })
+    } else if (!(key in next.attributes)) {
+      mutableOps.push({
+        action: 'remove_attribute',
+        key,
+        value: prev.attributes[key],
+      })
+    } else if (prev.attributes[key] !== next.attributes[key]) {
+      mutableOps.push({
+        action: 'set_attribute',
+        key,
+        nextValue: next.attributes[key],
+        prevValue: prev.attributes[key],
+      })
+    }
+  })
+
+  return mutableOps
 }
 
 export function diffChildren(
@@ -124,30 +187,32 @@ export function diffChildren(
   next: VNative,
   parentPath: string,
 ): IndexedActions {
-  let actions: IndexedActions = Map()
+  const mutableActions: IndexedActions = {}
   const prevChildrenByKey = groupByKey(prev.children)
   const nextChildrenByKey = groupByKey(next.children)
-  const setOfKey = Set<string | number>(prevChildrenByKey.keys()).concat(
-    nextChildrenByKey.keys(),
-  )
+  const setOfKey = new Set([
+    ...Object.keys(prevChildrenByKey),
+    ...Object.keys(nextChildrenByKey),
+  ])
 
   setOfKey.forEach(key => {
-    const prevGroup = prevChildrenByKey.get(key)
-    const prevNode = prevGroup ? safe(prevGroup.get(0)).node : undefined
+    const prevNode = prevChildrenByKey[key]
+      ? prevChildrenByKey[key].node
+      : undefined
+    const nextNode = nextChildrenByKey[key]
+      ? nextChildrenByKey[key].node
+      : undefined
 
-    const nextGroup = nextChildrenByKey.get(key)
-    const nextNode = nextGroup ? safe(nextGroup.get(0)).node : undefined
-
-    const index = prevGroup
-      ? safe(prevGroup.get(0)).index
-      : safe(safe(nextGroup).get(0)).index
+    const index = prevNode
+      ? prevChildrenByKey[key].index
+      : nextChildrenByKey[key].index
     const nextPath = createPath(parentPath, key)
 
     const childActions = diffNode(prevNode, nextNode, nextPath)
     if (childActions.length > 0) {
-      actions = actions.set(index, childActions)
+      mutableActions[index] = childActions
     }
   })
-  return actions
+  return mutableActions
 }
 export default diffNode

@@ -1,9 +1,35 @@
 {
   "defaultSeverity": "error",
-  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "extends": [
+    "tslint:recommended",
+    "tslint-immutable",
+    "tslint-config-prettier"
+  ],
   "rules": {
+    // Built-in rules
     "interface-name": false,
     "object-literal-sort-keys": false,
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "no-var-keyword": true,
+    "no-parameter-reassignment": true,
+    "typedef": [true, "call-signature"],
+
+    // Immutability rules
+    "readonly-keyword": [true, "ignore-local", { "ignore-prefix": "mutable" }],
+    "no-array-mutation": [true, "ignore-mutation-following-accessor"],
+    "no-let": [true, "ignore-local"],
+    "no-object-mutation": [true, { "ignore-prefix": "mutable" }],
+    "no-delete": true,
+    "no-method-signature": true,
+
+    // Functional style rules
+    "no-this": true,
+    "no-class": true,
+    "no-mixed-interface": {
+      "severity": "warning"
+    }
+  },
+  "linterOptions": {
+    "exclude": ["**/*.test.{ts,tsx}"]
   }
 }

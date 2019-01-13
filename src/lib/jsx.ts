@@ -2,7 +2,7 @@ import { GridCoord } from './driver'
 import { VNode } from './vdom'
 
 interface NodeData {
-  key?: string
+  readonly key?: string
 }
 
 declare global {
@@ -11,14 +11,14 @@ declare global {
 
     interface IntrinsicElements {
       // for test purposes only
-      box: GridCoord & NodeData
-      group: NodeData
+      readonly box: GridCoord & NodeData
+      readonly group: NodeData
 
       // previosionnal api
-      stage: NodeData
-      entity: NodeData
-      mesh: NodeData
-      sensor: NodeData
+      readonly stage: NodeData
+      readonly entity: NodeData
+      readonly mesh: NodeData
+      readonly sensor: NodeData
     }
   }
 }

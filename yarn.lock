@@ -3011,16 +3011,6 @@ ignore-walk@^3.0.1:
   dependencies:
     minimatch "^3.0.4"
 
-immutable-diff@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/immutable-diff/-/immutable-diff-0.1.1.tgz#99c4b5d88f226aab190c53189320b76157ba369a"
-  integrity sha1-mcS12I8iaqsZDFMYkyC3YVe6Npo=
-
-immutable@^4.0.0-rc.12:
-  version "4.0.0-rc.12"
-  resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.0.0-rc.12.tgz#ca59a7e4c19ae8d9bf74a97bdf0f6e2f2a5d0217"
-  integrity sha512-0M2XxkZLx/mi3t8NVwIm1g8nHoEmM9p9UBl/G9k4+hm0kBgOVdMV/B3CY5dQ8qG8qc80NN4gDV4HQv6FTJ5q7A==
-
 import-fresh@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-2.0.0.tgz#d81355c15612d386c61f9ddd3922d4304822a546"
@@ -6663,6 +6653,13 @@ tslint-config-prettier@^1.17.0:
   resolved "https://registry.yarnpkg.com/tslint-config-prettier/-/tslint-config-prettier-1.17.0.tgz#946ed6117f98f3659a65848279156d87628c33dc"
   integrity sha512-NKWNkThwqE4Snn4Cm6SZB7lV5RMDDFsBwz6fWUkTxOKGjMx8ycOHnjIbhn7dZd5XmssW3CwqUjlANR6EhP9YQw==
 
+tslint-immutable@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/tslint-immutable/-/tslint-immutable-5.0.1.tgz#757cdbede20d7217a3f68ddaaa87682424c424fe"
+  integrity sha512-2tmUnfHI/BOM+0Fsny8/h/lBna9XI+34kqcCRddLukZbv9Fis79YbPyQw5Ml0hGzP0H0fS7jFBWUM/6eX1+0ug==
+  dependencies:
+    tsutils "^2.28.0 || ^3.0.0"
+
 tslint@^5.11.0:
   version "5.11.0"
   resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.11.0.tgz#98f30c02eae3cde7006201e4c33cb08b48581eed"
@@ -6685,6 +6682,13 @@ tsutils@^2.27.2:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.29.0.tgz#32b488501467acbedd4b85498673a0812aca0b99"
   integrity sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==
+  dependencies:
+    tslib "^1.8.1"
+
+"tsutils@^2.28.0 || ^3.0.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-3.7.0.tgz#f97bdd2f109070bd1865467183e015b25734b477"
+  integrity sha512-n+e+3q7Jx2kfZw7tjfI9axEIWBY0sFMOlC+1K70X0SeXpO/UYSB+PN+E9tIJNqViB7oiXQdqD7dNchnvoneZew==
   dependencies:
     tslib "^1.8.1"
 

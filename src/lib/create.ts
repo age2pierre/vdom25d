@@ -1,6 +1,5 @@
 import { Mesh, Node } from 'babylonjs'
 import { Context, GridCoord } from './driver'
-import { ImmutableMap } from './immutablemap'
 import { createPath, VNative, VNode, VThunk } from './vdom'
 
 export function createElement(
@@ -28,12 +27,12 @@ function createNativeElement(
   const { tagName, attributes, children } = vnode
   let el: Node
   if (tagName === 'box') {
-    const props = attributes as ImmutableMap<GridCoord>
-    const box = Mesh.CreateBox('box', 1, context.scene)
-    box.isPickable = false
-    box.position.x = props.get('x')
-    box.position.y = props.get('y')
-    el = box
+    const props = attributes as GridCoord
+    const mutableBox = Mesh.CreateBox('box', 1, context.scene)
+    mutableBox.isPickable = false
+    mutableBox.position.x = props.x
+    mutableBox.position.y = props.y
+    el = mutableBox
   } else {
     return Error('Not yet implemented')
   }
@@ -41,9 +40,9 @@ function createNativeElement(
   children.forEach((node, index) => {
     const key = node.type === 'native' ? node.key : false
     const childPath = createPath(path, key || index)
-    const child = createElement(node, childPath, context)
-    if (child instanceof Node) {
-      child.parent = el
+    const mutableChild = createElement(node, childPath, context)
+    if (mutableChild instanceof Node) {
+      mutableChild.parent = el
     }
   })
 

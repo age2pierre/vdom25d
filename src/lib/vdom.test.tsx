@@ -64,7 +64,7 @@ describe('VNode creation', () => {
   test('native node without children', () => {
     const node = <box x={1} y={2} />
     expect(node).toEqual(
-      new VNative({
+      VNative({
         type: 'native',
         tagName: 'box',
         attributes: Map({
@@ -85,7 +85,7 @@ describe('VNode creation', () => {
       </box>
     )
     expect(node).toEqual(
-      new VNative({
+      VNative({
         type: 'native',
         tagName: 'box',
         attributes: Map({
@@ -94,7 +94,7 @@ describe('VNode creation', () => {
         }),
         key: undefined,
         children: List([
-          new VNative({
+          VNative({
             type: 'native',
             tagName: 'box',
             attributes: Map({
@@ -104,7 +104,7 @@ describe('VNode creation', () => {
             key: 'child1',
             children: List(),
           }),
-          new VNative({
+          VNative({
             type: 'native',
             tagName: 'box',
             attributes: Map({
@@ -121,12 +121,12 @@ describe('VNode creation', () => {
 
   test('Thunk node should be converted to native node', () => {
     interface ThunkProps {
-      arg: number
+      readonly arg: number
     }
     const Thunk = (props: ThunkProps) => <box x={props.arg} y={props.arg} />
     const node = <Thunk arg={7} />
     expect(node).toEqual(
-      new VThunk({
+      VThunk({
         fn: Thunk,
         props: Map({
           arg: 7,
