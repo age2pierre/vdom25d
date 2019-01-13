@@ -1,6 +1,6 @@
 import { List, Map } from 'immutable'
 import diff from 'immutable-diff'
-import { h, VNative } from './vdom'
+import { h, VNative, VThunk } from './vdom'
 
 describe('Immutable.Map diff operations', () => {
   const map1 = Map({})
@@ -120,18 +120,17 @@ describe('VNode creation', () => {
   })
 
   test('Thunk node should be converted to native node', () => {
-    const Thunk = (props: { arg: number }) => (
-      <box x={props.arg} y={props.arg} />
-    )
+    interface ThunkProps {
+      arg: number
+    }
+    const Thunk = (props: ThunkProps) => <box x={props.arg} y={props.arg} />
     const node = <Thunk arg={7} />
     expect(node).toEqual(
-      new VNative({
-        type: 'native',
-        tagName: 'box',
-        attributes: Map({
-          x: 7,
-          y: 7,
-        }),
+      new VThunk({
+        fn: Thunk,
+        props: Map({
+          arg: 7,
+        }) as any,
         key: undefined,
         children: List(),
       }),

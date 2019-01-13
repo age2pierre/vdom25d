@@ -1,8 +1,9 @@
 import { List, Map, Record } from 'immutable'
+import { Context } from './driver'
 
-export type VNode = VNative | VEmpty | VText
+export type VNode = VNative | VEmpty | VText | VThunk<any>
 
-type VNodeTypes = 'native' | 'empty' | 'text'
+type VNodeTypes = 'native' | 'empty' | 'text' | 'thunk'
 
 export type Attributes = Map<string, any>
 
@@ -42,6 +43,28 @@ export class VText extends Record<VTextBase>({
   }
 }
 
+interface VThunkBase<Props extends AttributesJS> extends VNodeBase {
+  type: 'thunk'
+  fn: (props: Props, context?: Context) => VNode
+  props: Map<keyof Props, any>
+  key: string | number | undefined
+  children: List<VNode>
+}
+
+export class VThunk<Props> extends Record<VThunkBase<any>>({
+  type: 'thunk',
+  fn: () => {
+    return new VEmpty()
+  },
+  props: Map(),
+  key: undefined,
+  children: List<VNode>(),
+}) {
+  constructor(arg: Partial<VThunkBase<Props>>) {
+    super(arg)
+  }
+}
+
 interface VEmptyBase extends VNodeBase {
   type: 'empty'
 }
@@ -61,15 +84,10 @@ interface AttributesJS {
 }
 
 export function h(
-  // tslint:disable-next-line:ban-types
-  tag: string | Function,
+  tag: string | ((props: any) => VNode),
   attributesArg?: AttributesJS,
   ...childrenArray: Children[]
 ): VNode {
-  if (tag instanceof Function) {
-    return tag(attributesArg)
-  }
-
   let key
   if (attributesArg) {
     key = attributesArg.key ? attributesArg.key : undefined
@@ -77,6 +95,15 @@ export function h(
   }
 
   const children = childrenArray.reduce(reduceChildren, List())
+
+  if (tag instanceof Function) {
+    return new VThunk({
+      fn: tag,
+      props: attributesArg ? Map(attributesArg) : undefined,
+      key,
+      children,
+    })
+  }
 
   return new VNative({
     tagName: tag,
