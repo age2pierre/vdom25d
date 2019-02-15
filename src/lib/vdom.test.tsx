@@ -1,6 +1,4 @@
-// import { List, Map } from 'immutable'
-// import diff from 'immutable-diff'
-import { h, VEmpty, VNative, VThunk } from './vdom'
+import { groupByKey, h, VEmpty, VNative, VThunk } from './vdom'
 
 describe('VNode creation', () => {
   test('native node without children', () => {
@@ -93,10 +91,22 @@ describe('VNode creation', () => {
   })
 })
 
-// describe.skip('group by key', () => {
-//   const children1 = List([
-//     <box x={1} y={1} key="child1" />,
-//     <box x={1} y={1} />,
-//   ])
-//   const children2 = List([<box x={1} y={1} />, <box x={1} y={1} />])
-// })
+describe('group by key', () => {
+  test('children with and without key', () => {
+    const node1 = <box x={1} y={1} key="child1" />
+    const node2 = <box x={1} y={1} />
+    const children = [node1, node2]
+    const groupedNodes = groupByKey(children)
+
+    expect(groupedNodes).toEqual({
+      child1: {
+        node: node1,
+        index: 0,
+      },
+      '1': {
+        node: node2,
+        index: 1,
+      },
+    })
+  })
+})
