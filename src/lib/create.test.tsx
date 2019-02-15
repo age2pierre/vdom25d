@@ -8,7 +8,7 @@ describe('element creation', () => {
   let scene: Scene
   let context: Context
   const engine = new NullEngine()
-  const Thunk = (props: { numchild: number }) => (
+  const Thunk = (props: { readonly numchild: number }) => (
     <box x={0} y={0}>
       {range(1, props.numchild + 1).map(i => (
         <box key={`child${i}`} x={i} y={i} />

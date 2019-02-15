@@ -1,7 +1,5 @@
-import { Map } from 'immutable'
 import diffNode, {
   diffAttributes,
-  IndexedActions,
   InsertNode,
   RemoveNode,
   ReplaceNode,
@@ -17,7 +15,13 @@ describe('diffAttributes', () => {
 
   test('replace one attribute', () => {
     const actions = diffAttributes(node1, node2)
-    expect(actions).toEqual([new SetAttribute('x', 2)])
+    const expected: SetAttribute = {
+      action: 'set_attribute',
+      key: 'x',
+      nextValue: 2,
+      prevValue: 1,
+    }
+    expect(actions).toEqual([expected])
   })
 })
 
@@ -52,86 +56,140 @@ describe('diffNode', () => {
 
   test('same node', () => {
     const changes = diffNode(node1, node1, '0')
-    expect(changes).toEqual([new SameNode()])
+    const expected: SameNode = {
+      action: 'same_node',
+    }
+    expect(changes).toEqual([expected])
   })
 
-  test('remove child', () => {
-    const changes1 = diffNode(node1, node2, '0')
-    const changes2 = diffNode(node3, node1, '0')
-    const changes3 = diffNode(node4, node3, '0')
-    expect(changes1).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(0, [
-          new RemoveNode(<box key="child1" x={1} y={2} />),
-        ]),
-      ),
-    ])
-    expect(changes2).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(1, [
-          new RemoveNode(<box key="child2" x={0} y={0} />),
-        ]),
-      ),
-    ])
-    expect(changes3).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(0, [
-          new UpdateChildren(
-            (Map() as IndexedActions).set(0, [
-              new RemoveNode(<box key="child11" x={0} y={0} />),
-            ]),
-          ),
-        ]),
-      ),
-    ])
+  test('remove first and only child', () => {
+    const changes = diffNode(node1, node2, '0')
+    const expectedNested: RemoveNode = {
+      action: 'remove_node',
+      prevNode: <box key="child1" x={1} y={2} />,
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expectedNested],
+      },
+    }
+    expect(changes).toEqual([expected])
   })
 
-  test('insert child', () => {
-    const changes1 = diffNode(node2, node1, '0')
-    const changes2 = diffNode(node1, node3, '0')
-    const changes3 = diffNode(node3, node4, '0')
+  test('remove second child', () => {
+    const changes = diffNode(node3, node1, '0')
+    const expectedNested: RemoveNode = {
+      action: 'remove_node',
+      prevNode: <box key="child2" x={0} y={0} />,
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        1: [expectedNested],
+      },
+    }
+    expect(changes).toEqual([expected])
+  })
 
-    expect(changes1).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(0, [
-          new InsertNode(<box key="child1" x={1} y={2} />, '0.child1'),
-        ]),
-      ),
-    ])
-    expect(changes2).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(1, [
-          new InsertNode(<box key="child2" x={0} y={0} />, '0.child2'),
-        ]),
-      ),
-    ])
-    expect(changes3).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(0, [
-          new UpdateChildren(
-            (Map() as IndexedActions).set(0, [
-              new InsertNode(
-                <box key="child11" x={0} y={0} />,
-                '0.child1.child11',
-              ),
-            ]),
-          ),
-        ]),
-      ),
-    ])
+  test('remove two level deep child', () => {
+    const changes = diffNode(node4, node3, '0')
+    const expected3action2: RemoveNode = {
+      action: 'remove_node',
+      prevNode: <box key="child11" x={0} y={0} />,
+    }
+    const expected3action1: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expected3action2],
+      },
+    }
+    const expected3: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expected3action1],
+      },
+    }
+    expect(changes).toEqual([expected3])
+  })
+
+  test('insert one child', () => {
+    const changes = diffNode(node2, node1, '0')
+    const expectedNested: InsertNode = {
+      action: 'insert_node',
+      child: <box key="child1" x={1} y={2} />,
+      nextPath: '0.child1',
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: { 0: [expectedNested] },
+    }
+    expect(changes).toEqual([expected])
+  })
+
+  test('insert one child with one existing child', () => {
+    const changes = diffNode(node1, node3, '0')
+    const expectedNested: InsertNode = {
+      action: 'insert_node',
+      child: <box key="child2" x={0} y={0} />,
+      nextPath: '0.child2',
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        1: [expectedNested],
+      },
+    }
+    expect(changes).toEqual([expected])
+  })
+
+  test('insert child two level deep', () => {
+    const changes = diffNode(node3, node4, '0')
+    const expectedNested2: InsertNode = {
+      action: 'insert_node',
+      child: <box key="child11" x={0} y={0} />,
+      nextPath: '0.child1.child11',
+    }
+    const expectedNested1: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expectedNested2],
+      },
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expectedNested1],
+      },
+    }
+    expect(changes).toEqual([expected])
   })
 
   test('replace node', () => {
-    const actions1 = diffNode(node2, node5, '0')
-    const actions2 = diffNode(node6, node7, '0')
+    const changes = diffNode(node2, node5, '0')
+    const expected: ReplaceNode = {
+      action: 'replace_node',
+      prevNode: node2,
+      nextNode: node5,
+      path: '0',
+    }
+    expect(changes).toEqual([expected])
+  })
 
-    expect(actions1).toEqual([new ReplaceNode(node2, node5, '0')])
-    expect(actions2).toEqual([
-      new UpdateChildren(
-        (Map() as IndexedActions).set(0, [
-          new ReplaceNode(<box x={1} y={2} />, new VEmpty(), '0.0'),
-        ]),
-      ),
-    ])
+  test('replace node by null at one child level', () => {
+    const changes = diffNode(node6, node7, '0')
+    const expectedNested: ReplaceNode = {
+      action: 'replace_node',
+      prevNode: <box x={1} y={2} />,
+      nextNode: VEmpty(),
+      path: '0.0',
+    }
+    const expected: UpdateChildren = {
+      action: 'update_chilren',
+      indexedActions: {
+        0: [expectedNested],
+      },
+    }
+    expect(changes).toEqual([expected])
   })
 })

@@ -1,3 +1,4 @@
+// tslint:disable:no-object-mutation
 import {
   Engine,
   GridMaterial,
@@ -23,12 +24,12 @@ import { VEmpty, VNode } from './vdom'
 // Right      1  0  0
 
 export interface GridCoord {
-  x: number
-  y: number
+  readonly x: number
+  readonly y: number
 }
 
 export interface Context {
-  scene: Scene
+  readonly scene: Scene
 }
 
 const XYPlane = new Plane(0, 0, 1, 0)
@@ -118,7 +119,7 @@ export default (idContainer = 'renderCanvas') => {
         },
         {
           context,
-          root: new VEmpty() as VNode,
+          root: VEmpty() as VNode,
         },
       )
     },
