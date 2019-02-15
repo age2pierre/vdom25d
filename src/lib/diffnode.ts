@@ -1,9 +1,10 @@
 import {
   createPath,
   groupByKey,
+  isVEmpty,
   isVNative,
   isVText,
-  VEmpty,
+  isVThunk,
   VNative,
   VNode,
 } from './vdom'
@@ -117,10 +118,13 @@ export function diffNode(
     }
     const actions: ReadonlyArray<DiffActions> = diffAttributes(prev, next)
     if (prev.children !== next.children) {
-      return actions.concat({
-        action: 'update_chilren',
-        indexedActions: diffChildren(prev, next, path),
-      })
+      const indexedActions = diffChildren(prev, next, path)
+      if (Object.keys(indexedActions).length > 0) {
+        return actions.concat({
+          action: 'update_chilren',
+          indexedActions,
+        })
+      }
     }
     return actions
   }
@@ -138,8 +142,28 @@ export function diffNode(
       return []
     }
   }
-  // TODO handle Vthunk
-  if (next instanceof VEmpty) {
+  if (isVThunk(next)) {
+    if (isVThunk(prev) && prev === next) {
+      return [
+        {
+          action: 'update_thunk',
+          prevNode: prev,
+          nextNode: next,
+          path,
+        },
+      ]
+    } else if (prev !== undefined) {
+      return [
+        {
+          action: 'replace_node',
+          prevNode: prev,
+          nextNode: next,
+          path,
+        },
+      ]
+    }
+  }
+  if (isVEmpty(next)) {
     return []
   }
   throw new Error('Inexhaustive case')
