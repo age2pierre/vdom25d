@@ -1,17 +1,21 @@
-import { Record } from 'immutable'
 import xs from 'xstream'
 import dropRepeats from 'xstream/extra/dropRepeats'
 import fromEvent from 'xstream/extra/fromEvent'
 
-export class Keyboard extends Record({
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-}) {}
+export interface Keyboard {
+  readonly up: boolean
+  readonly down: boolean
+  readonly left: boolean
+  readonly right: boolean
+}
 
 export default () => {
-  const initState = new Keyboard()
+  const initState: Keyboard = {
+    down: false,
+    left: false,
+    right: false,
+    up: false,
+  }
 
   const keys$ = xs.merge(
     fromEvent<KeyboardEvent>(document, 'keydown'),
@@ -20,7 +24,7 @@ export default () => {
 
   return keys$
     .fold((prev, event) => {
-      const key: 'up' | 'down' | 'left' | 'right'
+      let key: 'up' | 'down' | 'left' | 'right'
       switch (event.keyCode) {
         case 90:
           key = 'up'
@@ -38,10 +42,16 @@ export default () => {
           return prev
       }
       if (event.type === 'keydown') {
-        prev.set(key, true)
+        return {
+          ...prev,
+          [key]: true,
+        }
       }
       if (event.type === 'keyup') {
-        prev.set(key, false)
+        return {
+          ...prev,
+          [key]: false,
+        }
       }
       return prev
     }, initState)
