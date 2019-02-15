@@ -105,7 +105,7 @@ export function h(
     return VThunk({
       fn: tag,
       props: attributes,
-      key: String(key),
+      key: key ? String(key) : undefined,
       children,
     })
   }
@@ -113,7 +113,7 @@ export function h(
   return VNative({
     tagName: tag,
     attributes,
-    key: String(key),
+    key: key ? String(key) : undefined,
     children,
   })
 }
