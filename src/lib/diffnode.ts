@@ -7,6 +7,7 @@ import {
   isVThunk,
   VNative,
   VNode,
+  VThunk,
 } from './vdom'
 
 export interface SetAttribute {
@@ -51,8 +52,8 @@ export interface SameNode {
 }
 export interface UpdateThunk {
   readonly action: 'update_thunk'
-  readonly prevNode: VNode
-  readonly nextNode: VNode
+  readonly prevNode: VThunk<any>
+  readonly nextNode: VThunk<any>
   readonly path: string
 }
 
