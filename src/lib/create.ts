@@ -1,17 +1,16 @@
-import { Mesh, Node } from 'babylonjs'
-import { Context, GridCoord } from './driver'
+import { Context } from './makeapp'
 import { createPath, VNative, VNode, VThunk } from './vdom'
 
-export function createElement(
+export function createElement<T>(
   node: VNode,
   path: string,
-  context: Context,
-): Node | Error {
+  context: Context<T>,
+): T | Error {
   switch (node.type) {
     case 'empty':
-      return new Node('empty_' + path)
+      return context.emptyFactory(path)
     case 'native':
-      return createNativeElement(node, path, context)
+      return context.createNativeEl(node, path, context)
     case 'thunk':
       return createThunk(node, path, context)
     default:
@@ -19,41 +18,11 @@ export function createElement(
   }
 }
 
-function createNativeElement(
-  vnode: VNative,
-  path: string,
-  context: Context,
-): Node | Error {
-  const { tagName, attributes, children } = vnode
-  let el: Node
-  if (tagName === 'box') {
-    const props = attributes as GridCoord
-    const mutableBox = Mesh.CreateBox('box', 1, context.scene)
-    mutableBox.isPickable = false
-    mutableBox.position.x = props.x
-    mutableBox.position.y = props.y
-    el = mutableBox
-  } else {
-    return Error('Not yet implemented')
-  }
-
-  children.forEach((node, index) => {
-    const key = node.type === 'native' ? node.key : false
-    const childPath = createPath(path, key || index)
-    const mutableChild = createElement(node, childPath, context)
-    if (mutableChild instanceof Node) {
-      mutableChild.parent = el
-    }
-  })
-
-  return el
-}
-
-function createThunk(
+function createThunk<T>(
   vnode: VThunk<any>,
   path: string,
-  context: Context,
-): Node | Error {
+  context: Context<T>,
+): T | Error {
   // const { onCreate } = vnode.props
   const output = vnode.fn(vnode.props, context)
   const key = (output as VNative).key || '0'

@@ -1,12 +1,11 @@
-import { Mesh, NullEngine, Scene, Vector3 } from 'babylonjs'
+import { Mesh, NullEngine, Vector3 } from 'babylonjs'
+import { BabylonContext, createBabylonContext } from './babylondriver'
 import { createElement } from './create'
-import { Context } from './driver'
-import range from './range'
+import { range } from './utils'
 import { h } from './vdom'
 
-describe('element creation', () => {
-  let scene: Scene
-  let context: Context
+describe('babylon element creation', () => {
+  let context: BabylonContext
   const engine = new NullEngine()
   const Thunk = (props: { readonly numchild: number }) => (
     <box x={0} y={0}>
@@ -17,10 +16,7 @@ describe('element creation', () => {
   )
 
   beforeEach(() => {
-    scene = new Scene(engine)
-    context = {
-      scene,
-    }
+    context = createBabylonContext(engine)
   })
 
   test('no child', () => {
@@ -30,9 +26,9 @@ describe('element creation', () => {
     expect(el).toBeInstanceOf(Mesh)
     expect((el as Mesh).getChildren()).toHaveLength(0)
 
-    expect(context.scene.rootNodes).toHaveLength(1)
-    expect(context.scene.rootNodes[0]).toEqual(el)
-    expect((context.scene.rootNodes[0] as Mesh).position).toEqual(
+    expect(context.scene.rootNodes).toHaveLength(2)
+    expect(context.scene.rootNodes[1]).toEqual(el)
+    expect((context.scene.rootNodes[1] as Mesh).position).toEqual(
       new Vector3(0, 0),
     )
   })
@@ -52,7 +48,7 @@ describe('element creation', () => {
       new Vector3(2, 2),
     )
 
-    expect(context.scene.rootNodes).toHaveLength(1)
-    expect(context.scene.rootNodes[0]).toEqual(el)
+    expect(context.scene.rootNodes).toHaveLength(2)
+    expect(context.scene.rootNodes[1]).toEqual(el)
   })
 })

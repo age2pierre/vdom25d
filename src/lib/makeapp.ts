@@ -12,9 +12,13 @@ import {
 import 'babylonjs-materials'
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
+import { BabylonContext, createBabylonContext } from './babylondriver'
 import clock from './clock'
+import diffNode from './diffnode'
 import keyboard from './keyboard'
-import { VEmpty, VNode } from './vdom'
+import patch from './patch'
+import { ErrorLogger } from './utils'
+import { VNative, VNode } from './vdom'
 
 // Up         0  1  0
 // Down       0 -1  0
@@ -28,8 +32,27 @@ export interface GridCoord {
   readonly y: number
 }
 
-export interface Context {
-  readonly scene: Scene
+export interface Context<T> {
+  readonly refRoot: T
+  readonly root: VNode
+  // tslint:disable-next-line:no-mixed-interface
+  readonly emptyFactory: (path: string) => T
+  readonly createNativeEl: (
+    vnode: VNative,
+    path: string,
+    context: Context<T>,
+  ) => T | Error
+  readonly getChildren: (ref: T) => T[]
+  readonly getParent: (ref: T) => T
+  readonly replaceChild: (parent: T, oldRef: T, newRef: T) => true | Error
+  readonly removeChild: (parent: T, oldRef: T) => true | Error
+  readonly insertAtIndex: (parent: T, index: number, ref: T) => true | Error
+  readonly attributesUpdater: (
+    ref: T,
+    key: string,
+    newVal: any,
+    oldVal: any,
+  ) => true | Error
 }
 
 const XYPlane = new Plane(0, 0, 1, 0)
@@ -79,22 +102,18 @@ export default (idContainer = 'renderCanvas') => {
   const engine = new Engine(document.getElementById(
     idContainer,
   ) as HTMLCanvasElement)
-
-  const scene = new Scene(engine)
-  const camera = cameraFactory(scene)
-  const grid = gridFactory(scene)
-  const skybox = skyboxFactory(scene)
-  const context: Context = {
-    scene,
-  }
+  const context: BabylonContext = createBabylonContext(engine)
+  // const camera = cameraFactory(context.scene)
+  const grid = gridFactory(context.scene)
+  // const skybox = skyboxFactory(context.scene)
 
   window.addEventListener('resize', () => {
     engine.resize()
   })
 
-  const pick = xs.create<GridCoord>({
+  const pick$ = xs.create<GridCoord>({
     start: listener => {
-      scene.onPointerDown = (_, pickResult) => {
+      context.scene.onPointerDown = (_, pickResult) => {
         // if the click hits the grid object, we emit event
         if (pickResult.hit && pickResult.pickedMesh === grid) {
           listener.next({
@@ -109,20 +128,23 @@ export default (idContainer = 'renderCanvas') => {
     },
   })
 
+  const keyboard$ = keyboard()
+
   return {
     sink: (vdom$: Stream<VNode>): void => {
-      vdom$.fold(
-        (acc, nextRoot) => {
-          acc.context.scene.render()
-          const root = nextRoot
-          return { context, root }
-        },
-        {
-          context,
-          root: VEmpty() as VNode,
-        },
-      )
+      vdom$.fold((ctx, nextRoot) => {
+        ctx.scene.render()
+        const ops = diffNode(ctx.root, nextRoot, '0')
+        return {
+          ...ctx,
+          refRoot: ops.reduce(
+            ErrorLogger(patch(ctx), ctx.refRoot),
+            ctx.refRoot,
+          ),
+          root: nextRoot,
+        }
+      }, context)
     },
-    source: clock().compose(sampleCombine(pick, keyboard())),
+    source: clock().compose(sampleCombine(pick$, keyboard$)),
   }
 }

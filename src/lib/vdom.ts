@@ -1,4 +1,4 @@
-import { Context } from './driver'
+import { Context } from './makeapp'
 
 export type VNode = VNative | VEmpty | VText | VThunk<any>
 
@@ -55,7 +55,7 @@ export function isVText(arg: any): arg is VText {
 
 export interface VThunk<Props extends Attributes> extends VNodeBase {
   readonly type: 'thunk'
-  readonly fn: (props: Props, context?: Context) => VNode
+  readonly fn: (props: Props, context?: Context<any>) => VNode
   readonly props: Props
   readonly key: string | undefined
   readonly children: ReadonlyArray<VNode>
