@@ -1,6 +1,6 @@
 import { Context } from './makeapp'
 
-export type VNode = VNative | VEmpty | VText | VThunk<any>
+export type VNode = VNative | VEmpty | VText | VThunk<any, any>
 
 type VNodeTypes = 'native' | 'empty' | 'text' | 'thunk'
 
@@ -19,7 +19,7 @@ interface VNodeBase {
 
 export interface VNative extends VNodeBase {
   readonly type: 'native'
-  readonly tagName: string | undefined
+  readonly tagName: keyof JSX.IntrinsicElements | undefined
   readonly attributes: Attributes
   readonly key: string | undefined
   readonly children: ReadonlyArray<VNode>
@@ -53,14 +53,29 @@ export function isVText(arg: any): arg is VText {
   return arg && arg.type === 'text'
 }
 
-export interface VThunk<Props extends Attributes> extends VNodeBase {
+interface ThunkProps<C extends Context<any>> extends Attributes {
+  readonly onCreate?: (
+    arg: { readonly props: Attributes; readonly ctx: C },
+  ) => any
+  readonly onDestroy?: (
+    arg: { readonly props: Attributes; readonly ctx: C },
+  ) => any
+  readonly onUpdate?: (
+    arg: { readonly props: Attributes; readonly ctx: C },
+  ) => any
+}
+
+export interface VThunk<C extends Context<any>, Props extends ThunkProps<C>>
+  extends VNodeBase {
   readonly type: 'thunk'
-  readonly fn: (props: Props, context?: Context<any>) => VNode
+  readonly fn: (props: Props, context?: C) => VNode
   readonly props: Props
   readonly key: string | undefined
   readonly children: ReadonlyArray<VNode>
 }
-export function VThunk<Props>(arg: Partial<VThunk<any>>): VThunk<Props> {
+export function VThunk<Props>(
+  arg: Partial<VThunk<any, any>>,
+): VThunk<any, Props> {
   return {
     type: 'thunk',
     fn: () => {
@@ -72,7 +87,7 @@ export function VThunk<Props>(arg: Partial<VThunk<any>>): VThunk<Props> {
     ...arg,
   }
 }
-export function isVThunk(arg: any): arg is VThunk<any> {
+export function isVThunk(arg: any): arg is VThunk<any, any> {
   return arg && arg.type === 'thunk'
 }
 
@@ -111,7 +126,7 @@ export function h(
   }
 
   return VNative({
-    tagName: tag,
+    tagName: tag as keyof JSX.IntrinsicElements,
     attributes,
     key: key ? String(key) : undefined,
     children,

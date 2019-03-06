@@ -1,11 +1,12 @@
 import { Context } from './makeapp'
+import { assertNever } from './utils'
 import { createPath, VNative, VNode, VThunk } from './vdom'
 
 export function createElement<T>(
   node: VNode,
   path: string,
   context: Context<T>,
-): T | Error {
+): T {
   switch (node.type) {
     case 'empty':
       return context.emptyFactory(path)
@@ -13,22 +14,31 @@ export function createElement<T>(
       return context.createNativeEl(node, path, context)
     case 'thunk':
       return createThunk(node, path, context)
+    case 'text':
+      throw Error('Text node are not yet implemented')
     default:
-      return Error('Not yet implemented')
+      throw assertNever(node)
   }
 }
 
-function createThunk<T>(
-  vnode: VThunk<any>,
+function createThunk<T, C extends Context<T>>(
+  vnode: VThunk<C, any>,
   path: string,
-  context: Context<T>,
-): T | Error {
-  // const { onCreate } = vnode.props
+  context: C,
+): T {
+  const { onCreate, onDestroy, onUpdate, ...props } = vnode.props
   const output = vnode.fn(vnode.props, context)
   const key = (output as VNative).key || '0'
   const childPath = createPath(path, key)
   const el = createElement(output, childPath, context)
-  // if (onCreate) dispatch(onCreate(model))
+  if (onCreate) {
+    context.dispatch(
+      onCreate({
+        props,
+        ctx: context,
+      }),
+    )
+  }
   // vnode.state = {
   //   vnode: output,
   //   props: vnode.props,

@@ -1,17 +1,8 @@
-import { Quaternion, Vector3 } from 'babylonjs'
-import { GridCoord } from './makeapp'
+import { BoxProps, GroupProps } from './babylon/api'
 import { VNode } from './vdom'
 
-interface NodeData {
+export interface Keyable {
   readonly key?: string
-}
-
-interface MeshData {
-  readonly position: Vector3
-  readonly rotation: Vector3
-  readonly rotationQuaternion: Quaternion
-  // readonly setPivotMatrix: Vector3,
-  readonly scaling: Vector3
 }
 
 declare global {
@@ -19,13 +10,14 @@ declare global {
     type Element = VNode
 
     interface IntrinsicElements {
-      // for test purposes only
-      readonly box: GridCoord & NodeData
-      readonly group: NodeData
-
-      // previosionnal api
-      readonly mesh: NodeData & MeshData
-      readonly skinnedMesh: NodeData & MeshData
+      readonly box: Partial<BoxProps>
+      readonly group: Partial<GroupProps>
+      // readonly sphere: Partial<SphereProps>
+      // readonly mesh: Partial<MeshProps>
+      // readonly skinnedMesh: Partial<SkinnedMeshProps>
+      // readonly camera: Partial<CameraProps>
+      // readonly light: Partial<LightProps>
+      // readonly sprite: Partial<SpriteProps>
     }
   }
 }

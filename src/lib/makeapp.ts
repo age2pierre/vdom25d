@@ -1,7 +1,6 @@
 // tslint:disable:no-object-mutation
 import {
   Engine,
-  GridMaterial,
   Mesh,
   MeshBuilder,
   Plane,
@@ -10,14 +9,14 @@ import {
   Vector3,
 } from 'babylonjs'
 import 'babylonjs-materials'
+import { GridMaterial, SkyMaterial } from 'babylonjs-materials'
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
-import { BabylonContext, createBabylonContext } from './babylondriver'
+import createBabylonContext, { BabylonContext } from './babylon/driver'
 import clock from './clock'
 import diffNode from './diffnode'
 import keyboard from './keyboard'
 import patch from './patch'
-import { ErrorLogger } from './utils'
 import { VNative, VNode } from './vdom'
 
 // Up         0  1  0
@@ -41,18 +40,14 @@ export interface Context<T> {
     vnode: VNative,
     path: string,
     context: Context<T>,
-  ) => T | Error
+  ) => T
+  readonly dispatch: (arg: any) => any
   readonly getChildren: (ref: T) => T[]
   readonly getParent: (ref: T) => T
-  readonly replaceChild: (parent: T, oldRef: T, newRef: T) => true | Error
-  readonly removeChild: (parent: T, oldRef: T) => true | Error
-  readonly insertAtIndex: (parent: T, index: number, ref: T) => true | Error
-  readonly attributesUpdater: (
-    ref: T,
-    key: string,
-    newVal: any,
-    oldVal: any,
-  ) => true | Error
+  readonly replaceChild: (parent: T, oldRef: T, newRef: T) => T
+  readonly removeChild: (parent: T, oldRef: T) => T
+  readonly insertAtIndex: (parent: T, index: number, ref: T) => T
+  readonly updateAttribute: (ref: T, key: string, newVal: any, oldVal: any) => T
 }
 
 const XYPlane = new Plane(0, 0, 1, 0)
@@ -92,7 +87,7 @@ const gridFactory = (scene: Scene, width: number = 10, height: number = 10) => {
 
 const skyboxFactory = (scene: Scene) => {
   const skybox = Mesh.CreateBox('skyBox', 1000.0, scene)
-  const skyboxMaterial = new BABYLON.SkyMaterial('skyMaterial', scene)
+  const skyboxMaterial = new SkyMaterial('skyMaterial', scene)
   skyboxMaterial.backFaceCulling = false
   skybox.material = skyboxMaterial
   return skybox
@@ -137,10 +132,7 @@ export default (idContainer = 'renderCanvas') => {
         const ops = diffNode(ctx.root, nextRoot, '0')
         return {
           ...ctx,
-          refRoot: ops.reduce(
-            ErrorLogger(patch(ctx), ctx.refRoot),
-            ctx.refRoot,
-          ),
+          refRoot: ops.reduce(patch(ctx), ctx.refRoot),
           root: nextRoot,
         }
       }, context)

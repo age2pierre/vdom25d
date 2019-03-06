@@ -52,8 +52,8 @@ export interface SameNode {
 }
 export interface UpdateThunk {
   readonly action: 'update_thunk'
-  readonly prevNode: VThunk<any>
-  readonly nextNode: VThunk<any>
+  readonly prevNode: VThunk<any, any>
+  readonly nextNode: VThunk<any, any>
   readonly path: string
 }
 

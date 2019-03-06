@@ -9,12 +9,11 @@ import diffNode, {
   UpdateThunk,
 } from './diffnode'
 import { Context } from './makeapp'
-import { ErrorLogger } from './utils'
 import { createPath, isVNative, isVThunk, VNative, VNode } from './vdom'
 
 export default function updateElement<T>(
   ctx: Context<T>,
-): (n: T, a: DiffActions) => T | Error {
+): (n: T, a: DiffActions) => T {
   return (node, action) => {
     switch (action.action) {
       case 'same_node':
@@ -34,17 +33,13 @@ export default function updateElement<T>(
       case 'remove_node':
         return removeNode(node, action, ctx)
       default:
-        return Error('Unhandle Diff actions')
+        throw Error('Unhandle Diff actions')
     }
   }
 }
-function setAttribute<T>(
-  node: T,
-  action: SetAttribute,
-  ctx: Context<T>,
-): Error | T {
+function setAttribute<T>(node: T, action: SetAttribute, ctx: Context<T>): T {
   return (
-    ctx.attributesUpdater(
+    ctx.updateAttribute(
       node,
       action.key,
       action.nextValue,
@@ -57,18 +52,14 @@ function removeAttribute<T>(
   node: T,
   action: RemoveAttribute,
   ctx: Context<T>,
-): Error | T {
+): T {
   return (
-    ctx.attributesUpdater(node, action.key, null, (node as any)[action.key]) &&
+    ctx.updateAttribute(node, action.key, null, (node as any)[action.key]) &&
     node
   )
 }
 
-function insertNode<T>(
-  node: T,
-  action: InsertNode,
-  ctx: Context<T>,
-): Error | T {
+function insertNode<T>(node: T, action: InsertNode, ctx: Context<T>): T {
   const parent = ctx.getParent(node)
   return ctx.insertAtIndex(parent, 0, node) && node // TODO fix path
 }
@@ -77,7 +68,7 @@ function updateChildren<T>(
   node: T,
   action: UpdateChildren,
   ctx: Context<T>,
-): Error | T {
+): T {
   const children = [...ctx.getChildren(node)]
   Object.keys(action.indexedActions)
     .map(key => Number(key))
@@ -90,31 +81,20 @@ function updateChildren<T>(
   return node
 }
 
-function updateThunk<T>(
-  node: T,
-  action: UpdateThunk,
-  ctx: Context<T>,
-): T | Error {
+function updateThunk<T>(node: T, action: UpdateThunk, ctx: Context<T>): T {
   const nextNode = action.nextNode.fn(action.nextNode.props)
   const actions = diffNode(
     action.prevNode,
     nextNode,
     createPath(action.path, '0'),
   )
-  const nextRef = actions.reduce(ErrorLogger(updateElement(ctx), node), node)
+  const nextRef = actions.reduce(updateElement(ctx), node)
   return nextRef
 }
 
-function replaceNode<T>(
-  node: T,
-  action: ReplaceNode,
-  ctx: Context<T>,
-): Error | T {
+function replaceNode<T>(node: T, action: ReplaceNode, ctx: Context<T>): T {
   const { nextNode, prevNode, path } = action
   const newRef = ctx.createNativeEl(nextNode as VNative, path, ctx)
-  if (newRef instanceof Error) {
-    return newRef
-  }
   const parent = ctx.getParent(node)
   if (parent) {
     ctx.replaceChild(parent, node, newRef)
@@ -123,11 +103,7 @@ function replaceNode<T>(
   return newRef
 }
 
-function removeNode<T>(
-  node: T,
-  action: RemoveNode,
-  ctx: Context<T>,
-): Error | T {
+function removeNode<T>(node: T, action: RemoveNode, ctx: Context<T>): T {
   removeThunks(action.prevNode, ctx)
   const parent = ctx.getParent(node)
   ctx.removeChild(parent, node)
@@ -136,11 +112,15 @@ function removeNode<T>(
 
 function removeThunks<T>(vnode: VNode, ctx: Context<T>): void {
   while (isVThunk(vnode)) {
-    // TODO
-    // const onRemove = vnode.options.onRemove
-    // const { model } = vnode.state
-    // if (onRemove) dispatch(onRemove(model))
-    // vnode = vnode.state.vnode
+    const { onCreate, onDestroy, onUpdate, ...props } = vnode.props
+    if (onDestroy) {
+      ctx.dispatch(
+        onDestroy({
+          props,
+          ctx,
+        }),
+      )
+    }
   }
   if ((isVThunk(vnode) || isVNative(vnode)) && vnode.children) {
     vnode.children.forEach(child => removeThunks(child, ctx))

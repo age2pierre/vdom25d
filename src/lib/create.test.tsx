@@ -1,5 +1,5 @@
 import { Mesh, NullEngine, Vector3 } from 'babylonjs'
-import { BabylonContext, createBabylonContext } from './babylondriver'
+import createBabylonContext, { BabylonContext } from './babylon/driver'
 import { createElement } from './create'
 import { range } from './utils'
 import { h } from './vdom'
@@ -8,9 +8,9 @@ describe('babylon element creation', () => {
   let context: BabylonContext
   const engine = new NullEngine()
   const Thunk = (props: { readonly numchild: number }) => (
-    <box x={0} y={0}>
+    <box position={new Vector3(0, 0, 0)}>
       {range(1, props.numchild + 1).map(i => (
-        <box key={`child${i}`} x={i} y={i} />
+        <box key={`child${i}`} position={new Vector3(i, i, 0)} />
       ))}
     </box>
   )
