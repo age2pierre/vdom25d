@@ -22,6 +22,7 @@ describe('diffAttributes', () => {
     const actions = diffAttributes(node1, node2)
     const expected: SetAttribute = {
       action: 'set_attribute',
+      tag: 'box',
       key: 'position',
       nextValue: vec2,
       prevValue: vec1,

@@ -37,11 +37,13 @@ export default function updateElement<T>(
     }
   }
 }
+
 function setAttribute<T>(node: T, action: SetAttribute, ctx: Context<T>): T {
   return (
     ctx.updateAttribute(
       node,
       action.key,
+      action.tag as any,
       action.nextValue,
       (node as any)[action.key],
     ) && node
@@ -94,7 +96,7 @@ function updateThunk<T>(node: T, action: UpdateThunk, ctx: Context<T>): T {
 
 function replaceNode<T>(node: T, action: ReplaceNode, ctx: Context<T>): T {
   const { nextNode, prevNode, path } = action
-  const newRef = ctx.createNativeEl(nextNode as VNative, path, ctx)
+  const newRef = ctx.createNativeEl(nextNode as VNative, path)
   const parent = ctx.getParent(node)
   if (parent) {
     ctx.replaceChild(parent, node, newRef)

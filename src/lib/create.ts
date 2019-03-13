@@ -11,7 +11,7 @@ export function createElement<T>(
     case 'empty':
       return context.emptyFactory(path)
     case 'native':
-      return context.createNativeEl(node, path, context)
+      return context.createNativeEl(node, path)
     case 'thunk':
       return createThunk(node, path, context)
     case 'text':

@@ -13,7 +13,7 @@ const box: ElementDriver<Mesh, BoxProps, BabylonContext, Node> = {
     return mutableBox
   },
 
-  update: (ref, key, newVal, oldVal, ctx) => {
+  update: (ref, key, newVal) => {
     const mutableRef = ref
     switch (key) {
       case 'key':

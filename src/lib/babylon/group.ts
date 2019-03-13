@@ -3,16 +3,16 @@ import { assertNever, entries } from '../utils'
 import { GroupProps } from './api'
 import { BabylonContext, ElementDriver } from './driver'
 
-const box: ElementDriver<TransformNode, GroupProps, BabylonContext, Node> = {
+const group: ElementDriver<TransformNode, GroupProps, BabylonContext, Node> = {
   factory: (props, context) => {
-    const group = new TransformNode('group', context.scene)
+    const groupRef = new TransformNode('group', context.scene)
     entries(props).forEach(({ key, val }) => {
-      box.update(group, key, val, undefined, context)
+      group.update(groupRef, key, val, undefined, context)
     })
-    return group
+    return groupRef
   },
 
-  update: (ref, key, newVal, oldVal, ctx) => {
+  update: (ref, key, newVal) => {
     const mutableRef = ref
     switch (key) {
       case 'key':
@@ -32,4 +32,4 @@ const box: ElementDriver<TransformNode, GroupProps, BabylonContext, Node> = {
   },
 }
 
-export default box
+export default group

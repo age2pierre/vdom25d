@@ -36,28 +36,31 @@ export interface Context<T> {
   readonly root: VNode
   // tslint:disable-next-line:no-mixed-interface
   readonly emptyFactory: (path: string) => T
-  readonly createNativeEl: (
-    vnode: VNative,
-    path: string,
-    context: Context<T>,
-  ) => T
+  readonly createNativeEl: (vnode: VNative, path: string) => T
   readonly dispatch: (arg: any) => any
   readonly getChildren: (ref: T) => T[]
   readonly getParent: (ref: T) => T
   readonly replaceChild: (parent: T, oldRef: T, newRef: T) => T
   readonly removeChild: (parent: T, oldRef: T) => T
   readonly insertAtIndex: (parent: T, index: number, ref: T) => T
-  readonly updateAttribute: (ref: T, key: string, newVal: any, oldVal: any) => T
+  readonly updateAttribute: (
+    ref: T,
+    key: string,
+    tag: keyof JSX.IntrinsicElements | undefined,
+    newVal: any,
+    oldVal: any,
+  ) => T
 }
 
 const XYPlane = new Plane(0, 0, 1, 0)
 
+// TODO move into comp
 const cameraFactory = (
   scene: Scene,
   distance: number = 10,
   x: number = 5,
   y: number = 5,
-  fov: number = 30,
+  fov: number = 60,
 ) => {
   const camera = new TargetCamera(
     'mainCamera',
@@ -85,6 +88,7 @@ const gridFactory = (scene: Scene, width: number = 10, height: number = 10) => {
   return gridMesh
 }
 
+// TODO move into comp
 const skyboxFactory = (scene: Scene) => {
   const skybox = Mesh.CreateBox('skyBox', 1000.0, scene)
   const skyboxMaterial = new SkyMaterial('skyMaterial', scene)
@@ -98,9 +102,9 @@ export default (idContainer = 'renderCanvas') => {
     idContainer,
   ) as HTMLCanvasElement)
   const context: BabylonContext = createBabylonContext(engine)
-  // const camera = cameraFactory(context.scene)
+  cameraFactory(context.scene)
   const grid = gridFactory(context.scene)
-  // const skybox = skyboxFactory(context.scene)
+  skyboxFactory(context.scene)
 
   window.addEventListener('resize', () => {
     engine.resize()
@@ -126,17 +130,19 @@ export default (idContainer = 'renderCanvas') => {
   const keyboard$ = keyboard()
 
   return {
-    sink: (vdom$: Stream<VNode>): void => {
-      vdom$.fold((ctx, nextRoot) => {
-        ctx.scene.render()
-        const ops = diffNode(ctx.root, nextRoot, '0')
-        return {
-          ...ctx,
-          refRoot: ops.reduce(patch(ctx), ctx.refRoot),
-          root: nextRoot,
-        }
-      }, context)
+    sinks: {
+      babylon: (vdom$: Stream<VNode>): void => {
+        vdom$.fold((ctx, nextRoot) => {
+          ctx.scene.render()
+          const ops = diffNode(ctx.root, nextRoot, '0')
+          return {
+            ...ctx,
+            refRoot: ops.reduce(patch(ctx), ctx.refRoot),
+            root: nextRoot,
+          }
+        }, context)
+      },
     },
-    source: clock().compose(sampleCombine(pick$, keyboard$)),
+    sources: clock().compose(sampleCombine(pick$, keyboard$)),
   }
 }

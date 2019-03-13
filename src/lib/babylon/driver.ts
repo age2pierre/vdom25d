@@ -1,10 +1,11 @@
-import { Engine, Node, Scene, TransformNode } from 'babylonjs'
+import { Engine, Mesh, Node, Scene, TransformNode } from 'babylonjs'
 import { createElement } from '../create'
 import { Context } from '../makeapp'
 import { assertNever } from '../utils'
 import { createPath, VEmpty, VNative } from '../vdom'
 import { BoxProps } from './api'
 import box from './box'
+import group from './group'
 
 export interface BabylonContext extends Context<Node> {
   readonly scene: Scene
@@ -16,8 +17,8 @@ export interface ElementDriver<Ref extends T, Props, C extends Context<T>, T> {
     ref: Ref,
     key: keyof Props,
     newVal: Props[keyof Props],
-    oldVal: Props[keyof Props],
-    ctx: C,
+    oldVal?: Props[keyof Props],
+    ctx?: C,
   ) => Ref
 }
 
@@ -53,21 +54,6 @@ function createBabylonElement(
   return el
 }
 
-function updateAttributes(
-  ref: Node,
-  key: string,
-  newVal: any,
-  oldVal: any,
-): Node {
-  try {
-    // tslint:disable-next-line:no-object-mutation
-    ;(ref as any)[key] = newVal
-    return ref
-  } catch (err) {
-    throw err
-  }
-}
-
 export default function createBabylonContext(engine: Engine): BabylonContext {
   const scene = new Scene(engine)
   const refRoot = new Node('root', scene)
@@ -80,8 +66,7 @@ export default function createBabylonContext(engine: Engine): BabylonContext {
       // tslint:disable-next-line:no-console
       console.warn('Dispatch not yet implemented ' + JSON.stringify(e))
     },
-    createNativeEl: (vnode, path, ctx) =>
-      createBabylonElement(vnode, path, ctx as BabylonContext),
+    createNativeEl: (vnode, path) => createBabylonElement(vnode, path, context),
     getChildren: node => node.getChildren(),
     getParent: node => node.parent || refRoot,
     replaceChild: (parent, oldRef, newRef) => {
@@ -108,7 +93,25 @@ export default function createBabylonContext(engine: Engine): BabylonContext {
       }
       return ref
     },
-    updateAttribute: updateAttributes,
+    updateAttribute: (ref, key, tag, newVal, oldVal) => {
+      if (!tag) {
+        throw new Error(
+          'updateAttribute on VText is not implemented yet in Babylon driver',
+        )
+      } else {
+        switch (tag) {
+          case 'box':
+            return box.update(ref as Mesh, key as any, newVal)
+          case 'group':
+            return group.update(ref as TransformNode, key as any, newVal)
+          case undefined:
+          case 'tag':
+            throw Error("Tagname shouldn't be undefined")
+          default:
+            throw assertNever(tag)
+        }
+      }
+    },
   }
   return context
 }

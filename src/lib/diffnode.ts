@@ -12,6 +12,7 @@ import {
 
 export interface SetAttribute {
   readonly action: 'set_attribute'
+  readonly tag?: string
   readonly key: string
   readonly nextValue: any
   readonly prevValue?: any // FIXME: prevValue maynot be needed, check later or remove ?
@@ -19,6 +20,7 @@ export interface SetAttribute {
 
 export interface RemoveAttribute {
   readonly action: 'remove_attribute'
+  readonly tag?: string
   readonly key: string
   readonly value?: any
 }
@@ -134,6 +136,7 @@ export function diffNode(
       return [
         {
           action: 'set_attribute',
+          tag: undefined,
           key: 'nodeValue',
           nextValue: next.value,
           prevValue: prev.value,
@@ -185,18 +188,21 @@ export function diffAttributes(
     if (!(key in prev.attributes)) {
       mutableOps.push({
         action: 'set_attribute',
+        tag: next.tagName,
         key,
         nextValue: next.attributes[key],
       })
     } else if (!(key in next.attributes)) {
       mutableOps.push({
         action: 'remove_attribute',
+        tag: next.tagName,
         key,
         value: prev.attributes[key],
       })
     } else if (prev.attributes[key] !== next.attributes[key]) {
       mutableOps.push({
         action: 'set_attribute',
+        tag: next.tagName,
         key,
         nextValue: next.attributes[key],
         prevValue: prev.attributes[key],
