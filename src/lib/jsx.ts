@@ -10,6 +10,11 @@ declare global {
     type Element = VNode
 
     interface IntrinsicElements {
+      // for test purpose only
+      readonly tag: Partial<
+        { readonly x: number; readonly y: number } & Keyable
+      >
+
       readonly box: Partial<BoxProps>
       readonly group: Partial<GroupProps>
       // readonly sphere: Partial<SphereProps>

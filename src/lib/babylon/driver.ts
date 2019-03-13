@@ -36,6 +36,7 @@ function createBabylonElement(
       el = new Node('_')
       break
     case undefined:
+    case 'tag':
       throw Error("Tagname shouldn't be undefined")
     default:
       throw assertNever(tagName)

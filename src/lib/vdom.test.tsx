@@ -2,11 +2,11 @@ import { groupByKey, h, VEmpty, VNative, VThunk } from './vdom'
 
 describe('VNode creation', () => {
   test('native node without children', () => {
-    const node = <box x={1} y={2} />
+    const node = <tag x={1} y={2} />
     expect(node).toEqual(
       VNative({
         type: 'native',
-        tagName: 'box',
+        tagName: 'tag',
         attributes: {
           x: 1,
           y: 2,
@@ -19,15 +19,15 @@ describe('VNode creation', () => {
 
   test('native node with children', () => {
     const node = (
-      <box x={3} y={4}>
-        <box x={5} y={6} key="child1" />
-        <box x={5} y={6} key="child2" />
-      </box>
+      <tag x={3} y={4}>
+        <tag x={5} y={6} key="child1" />
+        <tag x={5} y={6} key="child2" />
+      </tag>
     )
     expect(node).toEqual(
       VNative({
         type: 'native',
-        tagName: 'box',
+        tagName: 'tag',
         attributes: {
           x: 3,
           y: 4,
@@ -36,7 +36,7 @@ describe('VNode creation', () => {
         children: [
           VNative({
             type: 'native',
-            tagName: 'box',
+            tagName: 'tag',
             attributes: {
               x: 5,
               y: 6,
@@ -46,7 +46,7 @@ describe('VNode creation', () => {
           }),
           VNative({
             type: 'native',
-            tagName: 'box',
+            tagName: 'tag',
             attributes: {
               x: 5,
               y: 6,
@@ -76,7 +76,7 @@ describe('VNode creation', () => {
     interface ThunkProps {
       readonly arg: number
     }
-    const Thunk = (props: ThunkProps) => <box x={props.arg} y={props.arg} />
+    const Thunk = (props: ThunkProps) => <tag x={props.arg} y={props.arg} />
     const node = <Thunk arg={7} />
     expect(node).toEqual(
       VThunk({
@@ -93,8 +93,8 @@ describe('VNode creation', () => {
 
 describe('group by key', () => {
   test('children with and without key', () => {
-    const node1 = <box x={1} y={1} key="child1" />
-    const node2 = <box x={1} y={1} />
+    const node1 = <tag x={1} y={1} key="child1" />
+    const node2 = <tag x={1} y={1} />
     const children = [node1, node2]
     const groupedNodes = groupByKey(children)
 
