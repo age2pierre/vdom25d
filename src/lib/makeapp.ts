@@ -144,5 +144,6 @@ export default (idContainer = 'renderCanvas') => {
       },
     },
     sources: clock().compose(sampleCombine(pick$, keyboard$)),
+    context,
   }
 }

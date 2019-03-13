@@ -56,8 +56,13 @@ function removeAttribute<T>(
   ctx: Context<T>,
 ): T {
   return (
-    ctx.updateAttribute(node, action.key, null, (node as any)[action.key]) &&
-    node
+    ctx.updateAttribute(
+      node,
+      action.key,
+      action.tag as any,
+      null,
+      (node as any)[action.key],
+    ) && node
   )
 }
 

@@ -47,3 +47,7 @@ export const pipe = <T extends any[], R>(
 
 export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
   fns.reduce((prevFn, nextFn) => value => prevFn(nextFn(value)), fn1)
+
+export function randomFloat(min: number = -5, max: number = 5): number {
+  return Math.random() * (max - min) + min
+}

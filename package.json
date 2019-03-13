@@ -19,6 +19,7 @@
     "babylonjs-materials": "^4.0.0-alpha.11",
     "matter-js": "^0.14.2",
     "rxjs": "^6.3.3",
+    "w3c-keys": "^0.3.6",
     "xstream": "^11.7.0"
   },
   "devDependencies": {
