@@ -16,7 +16,10 @@
 
     // Immutability rules
     "readonly-keyword": [true, "ignore-local", { "ignore-prefix": "mutable" }],
-    "no-array-mutation": [true, "ignore-mutation-following-accessor"],
+    "no-array-mutation": [
+      true,
+      { "ignore-mutation-following-accessor": true, "ignore-prefix": "mutable" }
+    ],
     "no-let": [true, "ignore-local"],
     "no-object-mutation": [true, { "ignore-prefix": "mutable" }],
     "no-delete": true,

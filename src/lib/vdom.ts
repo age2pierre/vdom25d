@@ -6,6 +6,7 @@ type VNodeTypes = 'native' | 'empty' | 'text' | 'thunk'
 
 interface AttributesJS {
   readonly [k: string]: any
+  // tslint:disable-next-line: no-mixed-interface
   readonly key?: string | number
 }
 
@@ -68,7 +69,9 @@ interface ThunkProps<C extends Context<any>> extends Attributes {
 export interface VThunk<C extends Context<any>, Props extends ThunkProps<C>>
   extends VNodeBase {
   readonly type: 'thunk'
+  // tslint:disable-next-line: no-mixed-interface
   readonly fn: (props: Props, context?: C) => VNode
+  // tslint:disable-next-line: no-mixed-interface
   readonly props: Props
   readonly key: string | undefined
   readonly children: ReadonlyArray<VNode>
