@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@types/matter-js": "^0.10.2",
-    "babylonjs": "^4.0.0-alpha.11",
-    "babylonjs-materials": "^4.0.0-alpha.11",
+    "babylonjs": "^3.3.0",
+    "babylonjs-materials": "^3.3.0",
     "matter-js": "^0.14.2",
     "rxjs": "^6.3.3",
     "w3c-keys": "^0.3.6",
