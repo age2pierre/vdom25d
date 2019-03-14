@@ -15,7 +15,11 @@ export default () => {
   const raf$ = xs.create<number>({
     start: listeners => {
       // tslint:disable-next-line:no-expression-statement
-      requestId = window.requestAnimationFrame(time => listeners.next(time))
+      const cb = (time: number) => {
+        listeners.next(time)
+        requestId = window.requestAnimationFrame(cb)
+      }
+      requestId = window.requestAnimationFrame(cb)
     },
     stop: () => {
       // tslint:disable-next-line:no-expression-statement
