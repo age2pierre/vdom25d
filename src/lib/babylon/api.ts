@@ -21,9 +21,11 @@ export interface Materializable {
   readonly material: Material
 }
 
-export type Eventcallback<P, C extends Context<any>> = (
-  arg: { readonly props: P; readonly ctx: C; readonly evt: ActionEvent },
-) => void
+export type Eventcallback<P, C extends Context<any>> = (arg: {
+  readonly props: P
+  readonly ctx: C
+  readonly evt: ActionEvent
+}) => void
 
 export interface Eventable<P, C extends Context<any>> {
   readonly onCenterPick: Eventcallback<P, C>
