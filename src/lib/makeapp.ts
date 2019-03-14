@@ -1,23 +1,15 @@
 // tslint:disable:no-object-mutation
-import {
-  Engine,
-  Mesh,
-  MeshBuilder,
-  Plane,
-  Scene,
-  TargetCamera,
-  Vector3,
-} from 'babylonjs'
-import 'babylonjs-materials'
-import { GridMaterial, SkyMaterial } from 'babylonjs-materials'
-import xs, { Stream } from 'xstream'
-import sampleCombine from 'xstream/extra/sampleCombine'
-import createBabylonContext, { BabylonContext } from './babylon/driver'
-import clock from './clock'
-import diffNode from './diffnode'
-import keyboard from './keyboard'
-import patch from './patch'
-import { VNative, VNode } from './vdom'
+import { Engine, Plane, Scene, TargetCamera, Vector3 } from 'babylonjs';
+// import 'babylonjs-materials'
+// import { GridMaterial, SkyMaterial } from 'babylonjs-materials'
+import { Stream } from 'xstream';
+import sampleCombine from 'xstream/extra/sampleCombine';
+import createBabylonContext, { BabylonContext } from './babylon/driver';
+import clock from './clock';
+import diffNode from './diffnode';
+import keyboard from './keyboard';
+import patch from './patch';
+import { VNative, VNode } from './vdom';
 
 // Up         0  1  0
 // Down       0 -1  0
@@ -71,68 +63,78 @@ const cameraFactory = (
   return camera
 }
 
-const gridFactory = (scene: Scene, width: number = 10, height: number = 10) => {
-  const gridMesh = MeshBuilder.CreatePlane(
-    'gridMesh',
-    {
-      width,
-      height,
-      sourcePlane: XYPlane,
-    },
-    scene,
-  )
-  gridMesh.isPickable = true
-  const gridMaterial = new GridMaterial('gridMaterial', scene)
-  gridMaterial.gridRatio = 1
-  gridMesh.material = gridMaterial
-  return gridMesh
-}
+// const gridFactory = (scene: Scene, width: number = 10, height: number = 10) => {
+//   const gridMesh = MeshBuilder.CreatePlane(
+//     'gridMesh',
+//     {
+//       width,
+//       height,
+//       sourcePlane: XYPlane,
+//     },
+//     scene,
+//   )
+//   gridMesh.isPickable = true
+//   const gridMaterial = new GridMaterial('gridMaterial', scene)
+//   gridMaterial.gridRatio = 1
+//   gridMesh.material = gridMaterial
+//   return gridMesh
+// }
 
-// TODO move into comp
-const skyboxFactory = (scene: Scene) => {
-  const skybox = Mesh.CreateBox('skyBox', 1000.0, scene)
-  const skyboxMaterial = new SkyMaterial('skyMaterial', scene)
-  skyboxMaterial.backFaceCulling = false
-  skybox.material = skyboxMaterial
-  return skybox
-}
+// // TODO move into comp
+// const skyboxFactory = (scene: Scene) => {
+//   const skybox = Mesh.CreateBox('skyBox', 1000.0, scene)
+//   const skyboxMaterial = new SkyMaterial('skyMaterial', scene)
+//   skyboxMaterial.backFaceCulling = false
+//   skybox.material = skyboxMaterial
+//   return skybox
+// }
 
 export default (idContainer = 'renderCanvas') => {
-  const engine = new Engine(document.getElementById(
-    idContainer,
-  ) as HTMLCanvasElement)
+  const engine = new Engine(
+    document.getElementById(idContainer) as HTMLCanvasElement,
+    false,
+    {
+      antialias: false,
+      preserveDrawingBuffer: false,
+      limitDeviceRatio: 1.0,
+    },
+    false,
+  )
   const context: BabylonContext = createBabylonContext(engine)
   cameraFactory(context.scene)
-  const grid = gridFactory(context.scene)
-  skyboxFactory(context.scene)
+  context.scene.ambientColor = new BABYLON.Color3(1, 1, 1)
+  // const grid = gridFactory(context.scene)
+  // skyboxFactory(context.scene)
 
   window.addEventListener('resize', () => {
     engine.resize()
   })
 
-  const pick$ = xs.create<GridCoord>({
-    start: listener => {
-      context.scene.onPointerDown = (_, pickResult) => {
-        // if the click hits the grid object, we emit event
-        if (pickResult.hit && pickResult.pickedMesh === grid) {
-          listener.next({
-            x: pickResult.pickedPoint!.x,
-            y: pickResult.pickedPoint!.y,
-          })
-        }
-      }
-    },
-    stop: () => {
-      return
-    },
-  })
+  // const pick$ = xs.create<GridCoord>({
+  //   start: listener => {
+  //     context.scene.onPointerDown = (_, pickResult) => {
+  //       // if the click hits the grid object, we emit event
+  //       if (pickResult.hit && pickResult.pickedMesh === grid) {
+  //         listener.next({
+  //           x: pickResult.pickedPoint!.x,
+  //           y: pickResult.pickedPoint!.y,
+  //         })
+  //       }
+  //     }
+  //   },
+  //   stop: () => {
+  //     return
+  //   },
+  // })
 
   const keyboard$ = keyboard()
+  const sources = clock().compose(sampleCombine(/*pick$, */ keyboard$))
+  let i = 0
 
   return {
-    sinks: {
-      babylon: (vdom$: Stream<VNode>): void => {
-        vdom$.fold((ctx, nextRoot) => {
+    run: (vdom$: Stream<VNode>): void => {
+      vdom$
+        .fold((ctx, nextRoot) => {
           ctx.scene.render()
           const ops = diffNode(ctx.root, nextRoot, '0')
           return {
@@ -141,9 +143,16 @@ export default (idContainer = 'renderCanvas') => {
             root: nextRoot,
           }
         }, context)
-      },
+        .addListener({
+          next: ctx => {
+            console.log(`frame ${i++}`)
+          },
+          error: err => {
+            console.error(err)
+          },
+        })
     },
-    sources: clock().compose(sampleCombine(pick$, keyboard$)),
+    sources,
     context,
   }
 }
