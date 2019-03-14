@@ -1,3 +1,4 @@
+import { createElement } from './create'
 import diffNode, {
   DiffActions,
   InsertNode,
@@ -101,7 +102,7 @@ function updateThunk<T>(node: T, action: UpdateThunk, ctx: Context<T>): T {
 
 function replaceNode<T>(node: T, action: ReplaceNode, ctx: Context<T>): T {
   const { nextNode, prevNode, path } = action
-  const newRef = ctx.createNativeEl(nextNode as VNative, path)
+  const newRef = createElement(nextNode as VNative, path, ctx)
   const parent = ctx.getParent(node)
   if (parent) {
     ctx.replaceChild(parent, node, newRef)
