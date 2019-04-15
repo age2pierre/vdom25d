@@ -1,18 +1,30 @@
-import { Engine, Mesh, Node, Scene, TransformNode } from 'babylonjs'
+/* tslint:disable:no-object-mutation */
+import {
+  AmbientLight,
+  Color,
+  Fog,
+  Group,
+  Mesh,
+  Object3D,
+  Points,
+  Renderer,
+  Scene,
+} from 'three'
 import { createElement } from '../create'
 import { Context } from '../makeapp'
 import { assertNever } from '../utils'
 import { createPath, VEmpty, VNative } from '../vdom'
-import { BoxProps } from './api'
-import box from './box'
+import ambientLight from './ambientlight'
 import group from './group'
+import mesh from './mesh'
 
-export interface BabylonContext extends Context<Node> {
+export interface ThreeContext extends Context<Object3D> {
+  readonly renderer: Renderer
   readonly scene: Scene
 }
 
 export interface ElementDriver<Ref extends T, Props, C extends Context<T>, T> {
-  readonly factory: (attr: Props, ctx: C) => Ref
+  readonly factory: (attr: Partial<Props>, ctx: C) => Ref
   readonly update: (
     ref: Ref,
     key: keyof Props,
@@ -22,19 +34,22 @@ export interface ElementDriver<Ref extends T, Props, C extends Context<T>, T> {
   ) => Ref
 }
 
-function createBabylonElement(
+function createThreeElement(
   vnode: VNative,
   path: string,
-  context: BabylonContext,
-): Node {
+  context: ThreeContext,
+): Object3D {
   const { tagName, attributes, children } = vnode
-  let el: Node
+  let el: Object3D
   switch (tagName) {
-    case 'box':
-      el = box.factory(attributes as BoxProps, context)
-      break
     case 'group':
-      el = new Node('_')
+      el = group.factory(attributes, context)
+      break
+    case 'mesh':
+      el = mesh.factory(attributes, context)
+      break
+    case 'ambientLight':
+      el = ambientLight.factory(attributes, context)
       break
     case undefined:
     case 'tag':
@@ -45,30 +60,46 @@ function createBabylonElement(
   children.forEach((node, index) => {
     const key = node.type === 'native' ? node.key : false
     const childPath = createPath(path, key || index)
-    const mutableChild = createElement(node, childPath, context)
-    if (mutableChild instanceof Node) {
-      mutableChild.parent = el
-    }
+    const child = createElement(node, childPath, context)
+    el.add(child)
   })
-
   return el
 }
 
-export default function createBabylonContext(engine: Engine): BabylonContext {
-  const scene = new Scene(engine)
-  const refRoot = new Node('root', scene)
-  const context: BabylonContext = {
+export default function createThreeContext(
+  renderer: Renderer,
+  background: Color = new Color(0xa0a0a0),
+  fog?: Fog,
+): ThreeContext {
+  const scene = new Scene()
+  scene.background = background
+  if (fog) {
+    scene.fog = fog
+  }
+  const refRoot = new Points()
+  refRoot.userData = {
+    path: '0',
+  }
+  scene.add(refRoot)
+  const context: ThreeContext = {
+    renderer,
     scene,
     refRoot,
     root: VEmpty(),
-    emptyFactory: path => new Node('empty_' + path),
+    emptyFactory: path => {
+      const ref = new Points()
+      ref.userData = {
+        path,
+      }
+      return ref
+    },
     dispatch: e => {
       // tslint:disable-next-line:no-console
       console.warn('Dispatch not yet implemented ' + JSON.stringify(e))
     },
-    createNativeEl: (vnode, path) => createBabylonElement(vnode, path, context),
-    getChildren: node => node.getChildren(),
-    getParent: node => node.parent || refRoot,
+    createNativeEl: (vnode, path) => createThreeElement(vnode, path, context),
+    getChildren: node => node.children,
+    getParent: node => node.parent || scene,
     replaceChild: (parent, oldRef, newRef) => {
       return (
         context.removeChild(parent, oldRef) &&
@@ -76,22 +107,10 @@ export default function createBabylonContext(engine: Engine): BabylonContext {
       )
     },
     removeChild: (parent, oldRef) => {
-      if (oldRef instanceof TransformNode) {
-        oldRef.setParent(null)
-      } else {
-        // tslint:disable-next-line:no-object-mutation
-        oldRef.parent = null
-      }
-      return oldRef
+      return parent.remove(oldRef)
     },
     insertAtIndex: (parent, index, ref) => {
-      if (ref instanceof TransformNode) {
-        ref.setParent(parent)
-      } else {
-        // tslint:disable-next-line:no-object-mutation
-        ref.parent = parent
-      }
-      return ref
+      return parent.add(ref)
     },
     updateAttribute: (ref, key, tag, newVal, oldVal) => {
       if (!tag) {
@@ -100,10 +119,12 @@ export default function createBabylonContext(engine: Engine): BabylonContext {
         )
       } else {
         switch (tag) {
-          case 'box':
-            return box.update(ref as Mesh, key as any, newVal)
           case 'group':
-            return group.update(ref as TransformNode, key as any, newVal)
+            return group.update(ref as Group, key as any, newVal)
+          case 'mesh':
+            return mesh.update(ref as Mesh, key as any, newVal)
+          case 'ambientLight':
+            return ambientLight.update(ref as AmbientLight, key as any, newVal)
           case undefined:
           case 'tag':
             throw Error("Tagname shouldn't be undefined")
