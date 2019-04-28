@@ -1,14 +1,13 @@
-import { Color3, StandardMaterial, Vector3 } from 'babylonjs';
-import xs, { Stream } from 'xstream';
-import { h, makeApp } from './lib';
-import makeStore, { Action, State as StateApp } from './lib/store';
-import { randomFloat } from './lib/utils';
+import { BoxGeometry, Color, MeshStandardMaterial, Vector3 } from 'three'
+import xs, { Stream } from 'xstream'
+import { h, makeApp } from './lib'
+import makeStore, { Action } from './lib/store'
+import { randomFloat, range } from './lib/utils'
 
 interface StateApp {
   readonly boxes: Array<{
     readonly x: number
     readonly y: number
-    readonly color: Color3
   }>
 }
 
@@ -22,7 +21,11 @@ const reducer = (state: StateApp, action: Action) => {
       return {
         boxes: [
           ...state.boxes,
-          { x: randomFloat(), y: randomFloat(), color: Color3.Random() },
+          {
+            x: randomFloat(),
+            y: randomFloat(),
+            color: new Color(Math.random(), Math.random(), Math.random()),
+          },
         ],
       }
   }
@@ -30,21 +33,41 @@ const reducer = (state: StateApp, action: Action) => {
 }
 
 const store = makeStore<StateApp>(reducer, {
-  boxes: [{ x: 0, y: 0, color: Color3.Red() }],
+  boxes: [
+    {
+      x: 0,
+      y: 0,
+    },
+  ],
 })
 
-const app = makeApp('renderCanvas')
+const app = makeApp('threeContainer')
+const CubeGeometry = new BoxGeometry(1, 1, 1)
+const NUM_COLORS = 6
+const BasicMats = range(0, NUM_COLORS)
+  .map(i => {
+    const c = new Color()
+    c.setHSL((1 / NUM_COLORS) * i, 1, 1)
+    return c
+  })
+  .map(
+    color =>
+      new MeshStandardMaterial({
+        color,
+        roughness: 1,
+        metalness: 0,
+      }),
+  )
 
 const AppComponent = (props: { readonly state: StateApp }) => (
   <group>
     {props.state.boxes.map((box, index) => {
-      const mutableMat = new StandardMaterial('box_material', app.context.scene)
-      mutableMat.diffuseColor = box.color
       return (
-        <box
+        <mesh
           key={`box_${index}`}
           position={new Vector3(box.x, box.y)}
-          material={mutableMat}
+          geometry={CubeGeometry}
+          material={BasicMats[index % NUM_COLORS]}
         />
       )
     })}

@@ -1,54 +1,73 @@
-import { Mesh, NullEngine, Vector3 } from 'babylonjs'
-import createBabylonContext, { BabylonContext } from './babylon/driver'
+import { Group, Mesh, Points, Scene, Vector3 } from 'three'
 import { createElement } from './create'
+import createThreeContext, { ThreeContext } from './three/driver'
+import NullRenderer from './three/nullRenderer'
 import { range } from './utils'
-import { h } from './vdom'
+import { h, VEmpty, VText } from './vdom'
 
-describe('babylon element creation', () => {
-  let context: BabylonContext
-  const engine = new NullEngine()
+describe('three element creation', () => {
+  let context: ThreeContext
+  const renderer = new NullRenderer()
+
   const Thunk = (props: { readonly numchild: number }) => (
-    <box position={new Vector3(0, 0, 0)}>
+    <group position={new Vector3(1, 1, 0)}>
       {range(1, props.numchild + 1).map(i => (
-        <box key={`child${i}`} position={new Vector3(i, i, 0)} />
+        <mesh key={`child${i}`} position={new Vector3(i, i, 0)} />
       ))}
-    </box>
+    </group>
   )
 
   beforeEach(() => {
-    context = createBabylonContext(engine)
+    context = createThreeContext(renderer)
+    expect(context.refRoot.children).toHaveLength(0)
+    expect(context.refRoot).toBeInstanceOf(Points)
+    expect(context.scene).toBeInstanceOf(Scene)
+    expect(context.scene.children).toHaveLength(1)
+    expect(context.scene.children[0]).toBe(context.refRoot)
   })
 
-  test('no child', () => {
+  test('native element', () => {
+    const node = <group position={new Vector3(1, 1, 0)} />
+    const el = createElement(node, '0', context)
+    expect(el).toBeInstanceOf(Group)
+  })
+
+  test('text element', () => {
+    const node = VText({
+      value: 'This are not the droid ur looking for',
+    })
+    expect(() => createElement(node, '0', context)).toThrow()
+  })
+
+  test('empty element', () => {
+    const node = VEmpty()
+    const el = createElement(node, '0', context)
+    expect(el).toBeInstanceOf(Points)
+    expect(el.userData.path).toBe('0')
+  })
+
+  test('thunk with no child', () => {
     const node = <Thunk numchild={0} />
     const el = createElement(node, '0', context)
 
-    expect(el).toBeInstanceOf(Mesh)
-    expect((el as Mesh).getChildren()).toHaveLength(0)
-
-    expect(context.scene.rootNodes).toHaveLength(2)
-    expect(context.scene.rootNodes[1]).toEqual(el)
-    expect((context.scene.rootNodes[1] as Mesh).position).toEqual(
-      new Vector3(0, 0),
-    )
+    expect(el).toBeInstanceOf(Group)
+    expect(el.children).toHaveLength(0)
+    expect(el.position).toEqual(new Vector3(1, 1))
   })
 
-  test('with children', () => {
+  test('thunk with children', () => {
     const node = <Thunk numchild={2} />
     const el = createElement(node, '0', context)
 
-    expect(el instanceof Mesh).toBe(true)
-    expect((el as Mesh).getChildren()).toHaveLength(2)
-    expect((el as Mesh).getChildren()[0]).toBeInstanceOf(Mesh)
-    expect(((el as Mesh).getChildren()[0] as Mesh).position).toEqual(
+    expect(el).toBeInstanceOf(Group)
+    expect((el as Mesh).children).toHaveLength(2)
+    expect((el as Mesh).children[0]).toBeInstanceOf(Mesh)
+    expect(((el as Mesh).children[0] as Mesh).position).toEqual(
       new Vector3(1, 1),
     )
-    expect((el as Mesh).getChildren()[1]).toBeInstanceOf(Mesh)
-    expect(((el as Mesh).getChildren()[1] as Mesh).position).toEqual(
+    expect((el as Mesh).children[1]).toBeInstanceOf(Mesh)
+    expect(((el as Mesh).children[1] as Mesh).position).toEqual(
       new Vector3(2, 2),
     )
-
-    expect(context.scene.rootNodes).toHaveLength(2)
-    expect(context.scene.rootNodes[1]).toEqual(el)
   })
 })

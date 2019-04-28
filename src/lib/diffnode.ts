@@ -147,7 +147,7 @@ export function diffNode(
     }
   }
   if (isVThunk(next)) {
-    if (isVThunk(prev) && prev === next) {
+    if (isVThunk(prev) && prev.fn === next.fn && prev.props !== next.props) {
       return [
         {
           action: 'update_thunk',
