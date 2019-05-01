@@ -1,3 +1,5 @@
+import { Context } from '../makeapp'
+import { createPath, isVNative, isVThunk, VNative, VNode } from '../vdom/vdom'
 import { createElement } from './create'
 import diffNode, {
   DiffActions,
@@ -9,8 +11,6 @@ import diffNode, {
   UpdateChildren,
   UpdateThunk,
 } from './diffnode'
-import { Context } from './makeapp'
-import { createPath, isVNative, isVThunk, VNative, VNode } from './vdom'
 
 export default function updateElement<T>(
   ctx: Context<T>,
@@ -67,9 +67,9 @@ function removeAttribute<T>(
   )
 }
 
-function insertNode<T>(node: T, action: InsertNode, ctx: Context<T>): T {
-  const parent = ctx.getParent(node)
-  return ctx.insertAtIndex(parent, 0, node) && node // TODO fix path
+function insertNode<T>(parent: T, action: InsertNode, ctx: Context<T>): T {
+  const child = createElement(action.child, action.nextPath, ctx)
+  return ctx.insertAtIndex(parent, 0, child)
 }
 
 function updateChildren<T>(
@@ -82,21 +82,20 @@ function updateChildren<T>(
     .map(key => Number(key))
     .forEach(index => {
       const actions = action.indexedActions[index]
-      actions.forEach(childAction =>
-        updateElement(ctx)(children[index], childAction),
-      )
+      actions.forEach(childAction => {
+        childAction.action === 'insert_node'
+          ? updateElement(ctx)(node, childAction)
+          : updateElement(ctx)(children[index], childAction)
+      })
     })
   return node
 }
 
 function updateThunk<T>(node: T, action: UpdateThunk, ctx: Context<T>): T {
   const nextNode = action.nextNode.fn(action.nextNode.props)
-  const actions = diffNode(
-    action.prevNode,
-    nextNode,
-    createPath(action.path, '0'),
-  )
-  const nextRef = actions.reduce(updateElement(ctx), node)
+  const prevNode = action.prevNode.fn(action.prevNode.props)
+  const actions = diffNode(prevNode, nextNode, createPath(action.path, '0'))
+  const nextRef = actions.reduce((n, a) => updateElement(ctx)(n, a), node)
   return nextRef
 }
 

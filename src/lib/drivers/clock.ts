@@ -7,7 +7,7 @@ export interface Clock {
 
 export default () => {
   const initState: Clock = {
-    time: performance.now(),
+    time: performance.now() / 1000,
     delta: 0,
   }
   let requestId = 0
@@ -16,7 +16,7 @@ export default () => {
     start: listeners => {
       // tslint:disable-next-line:no-expression-statement
       const cb = (time: number) => {
-        listeners.next(time)
+        listeners.next(time / 1000)
         requestId = window.requestAnimationFrame(cb)
       }
       requestId = window.requestAnimationFrame(cb)

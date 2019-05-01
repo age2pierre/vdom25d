@@ -1,5 +1,10 @@
-import { BoxProps, GroupProps } from './babylon/api'
-import { VNode } from './vdom'
+import {
+  AmbientLightProps,
+  DirectionalLightProps,
+  GroupProps,
+  MeshProps,
+} from './three/api'
+import { VNode } from './vdom/vdom'
 
 export interface Keyable {
   readonly key?: string
@@ -11,17 +16,18 @@ declare global {
 
     interface IntrinsicElements {
       // for test purpose only
-      readonly tag: Partial<
-        { readonly x: number; readonly y: number } & Keyable
-      >
+      readonly tag: any
 
-      readonly box: Partial<BoxProps>
       readonly group: Partial<GroupProps>
-      // readonly sphere: Partial<SphereProps>
-      // readonly mesh: Partial<MeshProps>
-      // readonly skinnedMesh: Partial<SkinnedMeshProps>
+      readonly mesh: Partial<MeshProps>
+      // readonly gltf: Partial<GLTFProps>
+      // readonly animatedGltf: Partial<AnimatedGLTFProps>
+      readonly ambientLight: Partial<AmbientLightProps>
+      readonly directionalLight: Partial<DirectionalLightProps>
+      // readonly hemispĥereLight: Partial<HemisphereLight>
+      // readonly pointLight: Partial<PointLightProps>
+      // readonly spotLight: Partial<SpotLightProps>
       // readonly camera: Partial<CameraProps>
-      // readonly light: Partial<LightProps>
       // readonly sprite: Partial<SpriteProps>
     }
   }

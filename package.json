@@ -9,21 +9,21 @@
   "scripts": {
     "start": "parcel ./src/index.html",
     "build": "npm run type-check && parcel build ./src/index.html --public-url '/'",
+    "debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand ",
     "prettify": "prettier --write './src/**/*.{ts,tsx,html}'",
     "test": "jest",
     "lint": "tslint -c tslint.json --fix 'src/**/*.{ts,tsx}'"
   },
   "dependencies": {
-    "@types/matter-js": "^0.10.2",
-    "babylonjs": "^3.3.0",
-    "babylonjs-materials": "^3.3.0",
-    "matter-js": "^0.14.2",
-    "rxjs": "^6.3.3",
+    "matter-js": "^0.10.0",
+    "three": "^0.93.0",
     "w3c-keys": "^0.3.6",
     "xstream": "^11.7.0"
   },
   "devDependencies": {
     "@types/jest": "^23.3.10",
+    "@types/matter-js": "^0.10.2",
+    "@types/three": "^0.93.30",
     "jest": "^23.6.0",
     "parcel": "^1.10.3",
     "prettier": "^1.15.3",

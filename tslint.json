@@ -15,13 +15,13 @@
     "typedef": [true, "call-signature"],
 
     // Immutability rules
-    "readonly-keyword": [true, "ignore-local", { "ignore-prefix": "mutable" }],
+    "readonly-keyword": [true, "ignore-local", { "ignore-prefix": "mut_" }],
     "no-array-mutation": [
       true,
-      { "ignore-mutation-following-accessor": true, "ignore-prefix": "mutable" }
+      { "ignore-mutation-following-accessor": true, "ignore-prefix": "mut_" }
     ],
     "no-let": [true, "ignore-local"],
-    "no-object-mutation": [true, { "ignore-prefix": "mutable" }],
+    "no-object-mutation": [true, { "ignore-prefix": "mut_" }],
     "no-delete": true,
     "no-method-signature": true,
 

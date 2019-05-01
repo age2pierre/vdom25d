@@ -3,7 +3,6 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
     <title>VDOM 2.5D</title>
-    <script src="./index.tsx"></script>
     <style>
       html,
       body {
@@ -14,7 +13,7 @@
         padding: 0;
       }
 
-      #renderCanvas {
+      #threeContainer {
         width: 100%;
         height: 100%;
         touch-action: none;
@@ -22,6 +21,7 @@
     </style>
   </head>
   <body>
-    <canvas id="renderCanvas"></canvas>
+    <div id="threeContainer"></div>
+    <script src="./index.tsx"></script>
   </body>
 </html>

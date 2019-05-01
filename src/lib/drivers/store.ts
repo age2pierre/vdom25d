@@ -1,4 +1,4 @@
-import { Stream } from 'xstream';
+import { Stream } from 'xstream'
 
 export interface Action {
   readonly type: string
