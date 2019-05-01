@@ -1,4 +1,4 @@
-import { Context } from './makeapp'
+import { Context } from '../makeapp'
 
 export type VNode = VNative | VEmpty | VText | VThunk<any, any>
 
@@ -55,15 +55,18 @@ export function isVText(arg: any): arg is VText {
 }
 
 interface ThunkProps<C extends Context<any>> extends Attributes {
-  readonly onCreate?: (
-    arg: { readonly props: Attributes; readonly ctx: C },
-  ) => any
-  readonly onDestroy?: (
-    arg: { readonly props: Attributes; readonly ctx: C },
-  ) => any
-  readonly onUpdate?: (
-    arg: { readonly props: Attributes; readonly ctx: C },
-  ) => any
+  readonly onCreate?: (arg: {
+    readonly props: Attributes
+    readonly ctx: C
+  }) => any
+  readonly onDestroy?: (arg: {
+    readonly props: Attributes
+    readonly ctx: C
+  }) => any
+  readonly onUpdate?: (arg: {
+    readonly props: Attributes
+    readonly ctx: C
+  }) => any
 }
 
 export interface VThunk<C extends Context<any>, Props extends ThunkProps<C>>
@@ -175,14 +178,14 @@ export function groupByKey(children: ReadonlyArray<VNode>): GroupedNodes {
       index,
     }))
     .reduce(
-      (mutableAcc, item) => {
+      (mut_acc, item) => {
         const key = isVNative(item.node)
           ? item.node.key
             ? item.node.key
             : item.index
           : item.index
-        mutableAcc[key] = item
-        return mutableAcc
+        mut_acc[key] = item
+        return mut_acc
       },
       {} as GroupedNodes,
     )

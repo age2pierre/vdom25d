@@ -2,6 +2,7 @@
 import {
   AmbientLight,
   Color,
+  DirectionalLight,
   Fog,
   Group,
   Mesh,
@@ -10,11 +11,12 @@ import {
   Renderer,
   Scene,
 } from 'three'
-import { createElement } from '../create'
 import { Context } from '../makeapp'
 import { assertNever } from '../utils'
-import { createPath, VEmpty, VNative } from '../vdom'
+import { createElement } from '../vdom/create'
+import { createPath, VEmpty, VNative } from '../vdom/vdom'
 import ambientLight from './ambientlight'
+import directionalLight from './directionallight'
 import group from './group'
 import mesh from './mesh'
 
@@ -50,6 +52,9 @@ function createThreeElement(
       break
     case 'ambientLight':
       el = ambientLight.factory(attributes, context)
+      break
+    case 'directionalLight':
+      el = directionalLight.factory(attributes, context)
       break
     case undefined:
     case 'tag':
@@ -125,6 +130,12 @@ export default function createThreeContext(
             return mesh.update(ref as Mesh, key as any, newVal)
           case 'ambientLight':
             return ambientLight.update(ref as AmbientLight, key as any, newVal)
+          case 'directionalLight':
+            return directionalLight.update(
+              ref as DirectionalLight,
+              key as any,
+              newVal,
+            )
           case undefined:
           case 'tag':
             throw Error("Tagname shouldn't be undefined")

@@ -1,4 +1,6 @@
 import { Vector3 } from 'three'
+import { range } from '../utils'
+import { h, VEmpty, VNative, VThunk } from '../vdom/vdom'
 import diffNode, {
   diffAttributes,
   InsertNode,
@@ -8,8 +10,6 @@ import diffNode, {
   SetAttribute,
   UpdateChildren,
 } from './diffnode'
-import { range } from './utils'
-import { h, VEmpty, VNative, VThunk } from './vdom'
 
 const vec0 = new Vector3(0, 0)
 const vec1 = new Vector3(1, 2)

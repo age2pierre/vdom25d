@@ -19,42 +19,42 @@ const driver: ElementDriver<Group, GroupProps, ThreeContext, Object3D> = {
     }, ref)
   },
 
-  update: (mutableRef, key, newVal, oldVal) => {
+  update: (mut_ref, key, newVal, oldVal) => {
     switch (key) {
       // keyable props
       case 'key':
-        return mutableRef
+        return mut_ref
       // three base props
       case 'position':
-        mutableRef.position.set(
+        mut_ref.position.set(
           (newVal as Vector3).x,
           (newVal as Vector3).y,
           (newVal as Vector3).z,
         )
-        return mutableRef
+        return mut_ref
       case 'rotation':
-        mutableRef.rotation.set(
+        mut_ref.rotation.set(
           (newVal as Euler).x,
           (newVal as Euler).y,
           (newVal as Euler).z,
         )
-        return mutableRef
+        return mut_ref
       case 'scale':
-        mutableRef.scale.set(
+        mut_ref.scale.set(
           (newVal as Vector3).x,
           (newVal as Vector3).y,
           (newVal as Vector3).z,
         )
-        return mutableRef
+        return mut_ref
       case 'receiveShadow':
-        mutableRef.receiveShadow = !!newVal
-        return mutableRef
+        mut_ref.receiveShadow = !!newVal
+        return mut_ref
       case 'castShadow':
-        mutableRef.castShadow = !!newVal
-        return mutableRef
+        mut_ref.castShadow = !!newVal
+        return mut_ref
       case 'visible':
-        mutableRef.visible = !!newVal
-        return mutableRef
+        mut_ref.visible = !!newVal
+        return mut_ref
       default:
         throw assertNever(key)
     }

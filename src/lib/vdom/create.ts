@@ -1,6 +1,6 @@
-import { Context } from './makeapp'
-import { assertNever } from './utils'
-import { createPath, VNative, VNode, VThunk } from './vdom'
+import { Context } from '../makeapp'
+import { assertNever } from '../utils'
+import { createPath, VNative, VNode, VThunk } from '../vdom/vdom'
 
 export function createElement<T>(
   node: VNode,

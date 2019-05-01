@@ -1,5 +1,10 @@
-import { AmbientLightProps, GroupProps, MeshProps } from './three/api'
-import { VNode } from './vdom'
+import {
+  AmbientLightProps,
+  DirectionalLightProps,
+  GroupProps,
+  MeshProps,
+} from './three/api'
+import { VNode } from './vdom/vdom'
 
 export interface Keyable {
   readonly key?: string
@@ -18,7 +23,7 @@ declare global {
       // readonly gltf: Partial<GLTFProps>
       // readonly animatedGltf: Partial<AnimatedGLTFProps>
       readonly ambientLight: Partial<AmbientLightProps>
-      // readonly directionalLight: Partial<DirectionalLightProps>
+      readonly directionalLight: Partial<DirectionalLightProps>
       // readonly hemispĥereLight: Partial<HemisphereLight>
       // readonly pointLight: Partial<PointLightProps>
       // readonly spotLight: Partial<SpotLightProps>

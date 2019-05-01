@@ -1,8 +1,8 @@
 import { Stream } from 'xstream'
 import fromDiagram from 'xstream/extra/fromDiagram'
 import { h } from '../lib'
+import { Action } from '../lib/drivers/store'
 import makeapp from '../lib/makeapp'
-import { Action } from '../lib/store'
 import { AppComponent, store } from './basic'
 
 describe.only('demo basic', () => {

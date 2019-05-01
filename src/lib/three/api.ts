@@ -57,6 +57,7 @@ export const defaultLightProps: LightBaseProps = {
   intensity: 0.7,
 }
 
+// tslint:disable-next-line: no-empty-interface
 export interface AmbientLightProps extends LightBaseProps {}
 
 export interface DirectionalLightProps extends LightBaseProps {

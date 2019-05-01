@@ -1,3 +1,5 @@
+import { Context } from '../makeapp'
+import { createPath, isVNative, isVThunk, VNative, VNode } from '../vdom/vdom'
 import { createElement } from './create'
 import diffNode, {
   DiffActions,
@@ -9,8 +11,6 @@ import diffNode, {
   UpdateChildren,
   UpdateThunk,
 } from './diffnode'
-import { Context } from './makeapp'
-import { createPath, isVNative, isVThunk, VNative, VNode } from './vdom'
 
 export default function updateElement<T>(
   ctx: Context<T>,
@@ -93,11 +93,8 @@ function updateChildren<T>(
 
 function updateThunk<T>(node: T, action: UpdateThunk, ctx: Context<T>): T {
   const nextNode = action.nextNode.fn(action.nextNode.props)
-  const actions = diffNode(
-    action.prevNode,
-    nextNode,
-    createPath(action.path, '0'),
-  )
+  const prevNode = action.prevNode.fn(action.prevNode.props)
+  const actions = diffNode(prevNode, nextNode, createPath(action.path, '0'))
   const nextRef = actions.reduce((n, a) => updateElement(ctx)(n, a), node)
   return nextRef
 }

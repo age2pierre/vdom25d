@@ -1,10 +1,19 @@
-import { Group, Mesh, Points, Scene, Vector3 } from 'three';
-import { DiffActions, InsertNode, RemoveNode, ReplaceNode, SameNode, SetAttribute, UpdateChildren, UpdateThunk } from './diffnode';
-import patch from './patch';
-import createThreeContext, { ThreeContext } from './three/driver';
-import NullRenderer from './three/nullRenderer';
-import { range } from './utils';
-import { h, VNative, VThunk } from './vdom';
+import { Group, Mesh, Points, Scene, Vector3 } from 'three'
+import createThreeContext, { ThreeContext } from '../three/driver'
+import NullRenderer from '../three/nullRenderer'
+import { range } from '../utils'
+import { h, VNative, VThunk } from '../vdom/vdom'
+import {
+  DiffActions,
+  InsertNode,
+  RemoveNode,
+  ReplaceNode,
+  SameNode,
+  SetAttribute,
+  UpdateChildren,
+  UpdateThunk,
+} from './diffnode'
+import patch from './patch'
 
 describe('three element patching', () => {
   let ctx: ThreeContext
@@ -162,8 +171,8 @@ describe('three element patching', () => {
     )
 
     const el = new Group()
-    const mutableChild1 = new Mesh()
-    el.add(mutableChild1)
+    const mut_Child1 = new Mesh()
+    el.add(mut_Child1)
 
     const op: UpdateThunk = {
       action: 'update_thunk',

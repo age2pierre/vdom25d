@@ -1,9 +1,9 @@
 import { Group, Mesh, Points, Scene, Vector3 } from 'three'
+import createThreeContext, { ThreeContext } from '../three/driver'
+import NullRenderer from '../three/nullRenderer'
+import { range } from '../utils'
+import { h, VEmpty, VText } from '../vdom/vdom'
 import { createElement } from './create'
-import createThreeContext, { ThreeContext } from './three/driver'
-import NullRenderer from './three/nullRenderer'
-import { range } from './utils'
-import { h, VEmpty, VText } from './vdom'
 
 describe('three element creation', () => {
   let context: ThreeContext

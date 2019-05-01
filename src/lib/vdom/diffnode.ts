@@ -8,7 +8,7 @@ import {
   VNative,
   VNode,
   VThunk,
-} from './vdom'
+} from '../vdom/vdom'
 
 export interface SetAttribute {
   readonly action: 'set_attribute'
@@ -182,25 +182,25 @@ export function diffAttributes(
     ...Object.keys(next.attributes),
   ])
 
-  const mutableOps: Array<SetAttribute | RemoveAttribute> = []
+  const mut_ops: Array<SetAttribute | RemoveAttribute> = []
 
   setOfKey.forEach(key => {
     if (!(key in prev.attributes)) {
-      mutableOps.push({
+      mut_ops.push({
         action: 'set_attribute',
         tag: next.tagName,
         key,
         nextValue: next.attributes[key],
       })
     } else if (!(key in next.attributes)) {
-      mutableOps.push({
+      mut_ops.push({
         action: 'remove_attribute',
         tag: next.tagName,
         key,
         value: prev.attributes[key],
       })
     } else if (prev.attributes[key] !== next.attributes[key]) {
-      mutableOps.push({
+      mut_ops.push({
         action: 'set_attribute',
         tag: next.tagName,
         key,
@@ -210,7 +210,7 @@ export function diffAttributes(
     }
   })
 
-  return mutableOps
+  return mut_ops
 }
 
 export function diffChildren(
@@ -218,7 +218,7 @@ export function diffChildren(
   next: VNative,
   parentPath: string,
 ): IndexedActions {
-  const mutableActions: IndexedActions = {}
+  const mut_actions: IndexedActions = {}
   const prevChildrenByKey = groupByKey(prev.children)
   const nextChildrenByKey = groupByKey(next.children)
   const setOfKey = new Set([
@@ -241,9 +241,9 @@ export function diffChildren(
 
     const childActions = diffNode(prevNode, nextNode, nextPath)
     if (childActions.length > 0) {
-      mutableActions[index] = childActions
+      mut_actions[index] = childActions
     }
   })
-  return mutableActions
+  return mut_actions
 }
 export default diffNode

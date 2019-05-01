@@ -1,32 +1,32 @@
 import {
-  BoxGeometry,
   Color,
+  DirectionalLight,
   Euler,
-  Geometry,
-  Material,
-  Mesh,
-  MeshStandardMaterial,
   Object3D,
+  OrthographicCamera,
   Vector3,
 } from 'three'
 import { assertNever, entries } from '../utils'
-import { defaultBaseProps, GroupProps, MeshProps } from './api'
+import { defaultBaseProps, DirectionalLightProps } from './api'
 import { ElementDriver, ThreeContext } from './driver'
 
-const defaultProps: MeshProps = {
+const defaultProps: DirectionalLightProps = {
   ...defaultBaseProps,
-  geometry: new BoxGeometry(1, 1, 1),
-  material: new MeshStandardMaterial({
-    color: new Color(1, 0.2, 0.2),
-    metalness: 0,
-    roughness: 1,
-  }),
+  color: new Color(1, 1, 1),
+  intensity: 0.8,
+  target: new Vector3(),
+  shadowProjector: new OrthographicCamera(-200, 200, 200, -200, 1, 100),
 }
 
-const driver: ElementDriver<Mesh, MeshProps, ThreeContext, Object3D> = {
+const driver: ElementDriver<
+  DirectionalLight,
+  DirectionalLightProps,
+  ThreeContext,
+  Object3D
+> = {
   factory: (attr, ctx) => {
-    const ref = new Mesh()
-    const fullAttr: GroupProps = {
+    const ref = new DirectionalLight()
+    const fullAttr: DirectionalLightProps = {
       ...defaultProps,
       ...attr,
     }
@@ -47,6 +47,7 @@ const driver: ElementDriver<Mesh, MeshProps, ThreeContext, Object3D> = {
           (newVal as Vector3).y,
           (newVal as Vector3).z,
         )
+        // TODO look at !! needs passing all the props !!
         return mut_ref
       case 'rotation':
         mut_ref.rotation.set(
@@ -71,12 +72,25 @@ const driver: ElementDriver<Mesh, MeshProps, ThreeContext, Object3D> = {
       case 'visible':
         mut_ref.visible = !!newVal
         return mut_ref
-      // mesh props
-      case 'geometry':
-        mut_ref.geometry = newVal as Geometry
+      // light base props
+      case 'color':
+        mut_ref.color = newVal as Color
         return mut_ref
-      case 'material':
-        mut_ref.material = newVal as Material
+      case 'intensity':
+        mut_ref.intensity = newVal as number
+        return mut_ref
+      // dir light props
+      case 'target':
+        mut_ref.lookAt(newVal as Vector3)
+        return mut_ref
+      case 'shadowProjector':
+        const cam = newVal as OrthographicCamera
+        mut_ref.shadowCameraBottom = cam.bottom
+        mut_ref.shadowCameraFar = cam.far
+        mut_ref.shadowCameraLeft = cam.left
+        mut_ref.shadowCameraRight = cam.right
+        mut_ref.shadowCameraTop = cam.top
+        mut_ref.shadowCameraNear = cam.near
         return mut_ref
       default:
         throw assertNever(key)

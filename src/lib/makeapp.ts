@@ -1,12 +1,13 @@
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import { PerspectiveCamera, WebGLRenderer } from 'three'
 import { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
-import clock from './clock'
-import diffNode from './diffnode'
-import keyboard from './keyboard'
-import patch from './patch'
+import clock from './drivers/clock'
+import keyboard from './drivers/keyboard'
 import createThreeContext, { ThreeContext } from './three/driver'
-import { VNative, VNode } from './vdom'
+import NullRenderer from './three/nullRenderer'
+import diffNode from './vdom/diffnode'
+import patch from './vdom/patch'
+import { VNative, VNode } from './vdom/vdom'
 
 export interface GridCoord {
   readonly x: number
@@ -34,20 +35,24 @@ export interface Context<T> {
   ) => T
 }
 
-export default (idContainer = 'threeContainer') => {
-  const renderer = new WebGLRenderer({
-    antialias: true,
-    alpha: true,
-  })
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  // tslint:disable-next-line: no-object-mutation
-  renderer.shadowMap.enabled = true
-  const container = document.getElementById(idContainer)
-  if (!container) {
-    throw Error(`Could not find HTML element ${idContainer}`)
+export default (idContainer = 'threeContainer', debug = false) => {
+  const renderer = debug
+    ? new NullRenderer()
+    : new WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      })
+  if (!debug && renderer instanceof WebGLRenderer) {
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    // tslint:disable-next-line: no-object-mutation
+    renderer.shadowMap.enabled = true
+    const container = document.getElementById(idContainer)
+    if (!container) {
+      throw Error(`Could not find HTML element ${idContainer}`)
+    }
+    container.appendChild(renderer.domElement)
   }
-  container.appendChild(renderer.domElement)
   const context: ThreeContext = createThreeContext(renderer)
 
   const camera = new PerspectiveCamera(
@@ -55,12 +60,16 @@ export default (idContainer = 'threeContainer') => {
     window.innerWidth / window.innerHeight,
   )
 
-  window.addEventListener('resize', () => {
-    // tslint:disable-next-line: no-object-mutation
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  })
+  camera.position.setZ(5)
+
+  if (!debug && renderer instanceof WebGLRenderer) {
+    window.addEventListener('resize', () => {
+      // tslint:disable-next-line: no-object-mutation
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+      renderer.setSize(window.innerWidth, window.innerHeight)
+    })
+  }
 
   const keyboard$ = keyboard()
   const sources = clock().compose(sampleCombine(/*pick$, */ keyboard$))
@@ -70,7 +79,7 @@ export default (idContainer = 'threeContainer') => {
     run: (vdom$: Stream<VNode>): void => {
       vdom$
         .fold((ctx, nextRoot) => {
-          ctx.renderer.render(ctx.refRoot as Scene, camera)
+          ctx.renderer.render(ctx.scene, camera)
           const ops = diffNode(ctx.root, nextRoot, '0')
           return {
             ...ctx,
