@@ -1,3 +1,7 @@
+import xs, { Stream } from 'xstream'
+import concat from 'xstream/extra/concat'
+import { Clock } from '../drivers/clock'
+
 // Credit to, adapted to xstream
 // https://github.com/gvergnaud/rx-ease
 
@@ -47,4 +51,34 @@ function stepper(
   }
 
   return [newValue, newVelocity]
+}
+
+export const makeSpring = (
+  clock$: Stream<Clock>,
+  stiffness = 170,
+  damping = 20,
+) => {
+  return (target$: Stream<number>) => {
+    const init$ = target$.take(1)
+
+    return concat(init$, xs
+      .combine(target$, clock$)
+      .fold(
+        (acc, stream) => {
+          const [value, velocity] = acc
+          const [target, clock] = stream
+          return stepper(
+            value === undefined ? target : value,
+            velocity as number,
+            target,
+            stiffness,
+            damping,
+            clock.delta,
+          )
+        },
+        [undefined, 0],
+      )
+      .map(r => r[0])
+      .drop(1) as Stream<number>)
+  }
 }
