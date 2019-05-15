@@ -51,3 +51,6 @@ export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 export function randomFloat(min: number = -5, max: number = 5): number {
   return Math.random() * (max - min) + min
 }
+
+// tslint:disable-next-line: no-empty
+export function noop(): void {}

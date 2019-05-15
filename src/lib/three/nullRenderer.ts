@@ -4,14 +4,14 @@ import { Camera, Renderer, Scene } from 'three'
 export default class NullRenderer implements Renderer {
   public readonly domElement!: HTMLCanvasElement
 
-  public render(scene: Scene, camera: Camera): void {
+  public render(_scene: Scene, _camera: Camera): void {
     console.log('Called mocked method NullRenderer.render()')
   }
 
   public setSize(
-    width: number,
-    height: number,
-    updateStyle?: boolean | undefined,
+    _width: number,
+    _height: number,
+    _updateStyle?: boolean | undefined,
   ): void {
     console.log('Called mocked method NullRenderer.setSize()')
   }

@@ -1,6 +1,6 @@
 import { Context } from '../makeapp'
 import { assertNever } from '../utils'
-import { createPath, VNative, VNode, VThunk } from '../vdom/vdom'
+import { createPath, VNative, VNode, VThunk } from './vdom'
 
 export function createElement<T>(
   node: VNode,
@@ -26,22 +26,9 @@ function createThunk<T, C extends Context<T>>(
   path: string,
   context: C,
 ): T {
-  const { onCreate, onDestroy, onUpdate, ...props } = vnode.props
   const output = vnode.fn(vnode.props, context)
   const key = (output as VNative).key || '0'
   const childPath = createPath(path, key)
   const el = createElement(output, childPath, context)
-  if (onCreate) {
-    context.dispatch(
-      onCreate({
-        props,
-        ctx: context,
-      }),
-    )
-  }
-  // vnode.state = {
-  //   vnode: output,
-  //   props: vnode.props,
-  // }
   return el
 }

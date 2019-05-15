@@ -54,23 +54,7 @@ export function isVText(arg: any): arg is VText {
   return arg && arg.type === 'text'
 }
 
-interface ThunkProps<C extends Context<any>> extends Attributes {
-  readonly onCreate?: (arg: {
-    readonly props: Attributes
-    readonly ctx: C
-  }) => any
-  readonly onDestroy?: (arg: {
-    readonly props: Attributes
-    readonly ctx: C
-  }) => any
-  readonly onUpdate?: (arg: {
-    readonly props: Attributes
-    readonly ctx: C
-  }) => any
-}
-
-export interface VThunk<C extends Context<any>, Props extends ThunkProps<C>>
-  extends VNodeBase {
+export interface VThunk<C extends Context<any>, Props> extends VNodeBase {
   readonly type: 'thunk'
   // tslint:disable-next-line: no-mixed-interface
   readonly fn: (props: Props, context?: C) => VNode

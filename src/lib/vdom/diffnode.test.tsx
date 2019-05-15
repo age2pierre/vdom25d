@@ -26,7 +26,9 @@ describe('diffAttributes', () => {
       tag: 'mesh',
       key: 'position',
       nextValue: vec2,
-      prevValue: vec1,
+      prevAttr: {
+        position: vec1,
+      },
     }
     expect(actions).toEqual([expected])
   })

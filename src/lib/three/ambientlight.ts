@@ -15,7 +15,7 @@ const driver: ElementDriver<
   ThreeContext,
   Object3D
 > = {
-  factory: (attr, ctx) => {
+  factory: attr => {
     const ref = new AmbientLight()
     const fullAttr: AmbientLightProps = {
       ...defaultProps,
@@ -26,7 +26,7 @@ const driver: ElementDriver<
     }, ref)
   },
 
-  update: (mut_ref, key, newVal, oldVal) => {
+  update: (mut_ref, key, newVal) => {
     switch (key) {
       // keyable props
       case 'key':

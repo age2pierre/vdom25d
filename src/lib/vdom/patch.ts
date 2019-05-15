@@ -118,17 +118,6 @@ function removeNode<T>(node: T, action: RemoveNode, ctx: Context<T>): T {
 }
 
 function removeThunks<T>(vnode: VNode, ctx: Context<T>): void {
-  while (isVThunk(vnode)) {
-    const { onCreate, onDestroy, onUpdate, ...props } = vnode.props
-    if (onDestroy) {
-      ctx.dispatch(
-        onDestroy({
-          props,
-          ctx,
-        }),
-      )
-    }
-  }
   if ((isVThunk(vnode) || isVNative(vnode)) && vnode.children) {
     vnode.children.forEach(child => removeThunks(child, ctx))
   }

@@ -1,5 +1,6 @@
 import xs, { Stream } from 'xstream'
 import concat from 'xstream/extra/concat'
+import dropRepeats from 'xstream/extra/dropRepeats'
 import { Clock } from '../drivers/clock'
 
 // Credit to, adapted to xstream
@@ -53,6 +54,11 @@ function stepper(
   return [newValue, newVelocity]
 }
 
+/**
+ * @param clock$ stream of clock
+ * @param stiffness prop of the spring [kg / s^2] default is 170
+ * @param damping prop of the spring [kg / s] default is 20
+ */
 export const makeSpring = (
   clock$: Stream<Clock>,
   stiffness = 170,
@@ -79,6 +85,6 @@ export const makeSpring = (
         [undefined, 0],
       )
       .map(r => r[0])
-      .drop(1) as Stream<number>)
+      .drop(1) as Stream<number>).compose(dropRepeats())
   }
 }

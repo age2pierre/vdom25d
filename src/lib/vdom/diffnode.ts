@@ -8,14 +8,14 @@ import {
   VNative,
   VNode,
   VThunk,
-} from '../vdom/vdom'
+} from './vdom'
 
 export interface SetAttribute {
   readonly action: 'set_attribute'
   readonly tag?: string
   readonly key: string
   readonly nextValue: any
-  readonly prevValue?: any // FIXME: prevValue maynot be needed, check later or remove ?
+  readonly prevAttr?: any
 }
 
 export interface RemoveAttribute {
@@ -139,7 +139,7 @@ export function diffNode(
           tag: undefined,
           key: 'nodeValue',
           nextValue: next.value,
-          prevValue: prev.value,
+          prevAttr: prev.value,
         },
       ]
     } else {
@@ -205,7 +205,7 @@ export function diffAttributes(
         tag: next.tagName,
         key,
         nextValue: next.attributes[key],
-        prevValue: prev.attributes[key],
+        prevAttr: prev.attributes,
       })
     }
   })

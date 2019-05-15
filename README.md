@@ -9,7 +9,7 @@ in opposition to the more imperative and traditionnal way of doing in the game i
 
 Static typing rules and the browsers uses JS, so this project is written entirely with TS.
 
-It use BabylonJS as the high-level graphic engine and MatterJS as the physics engine.
+It use ThreeJS as the high-level graphic engine (and maybe MatterJS as the physics engine in a close future).
 The first is 3D, the second is 2D making this a 2.5D game (hence the name of the project).
 
 Inspiration comes from [CycleJS](https://cycle.js.org/getting-started.html) (for it use of reactive stream), [React-Three-Renderer](https://github.com/toxicFork/react-three-renderer) (goalwise) and [Deku](https://github.com/anthonyshort/deku/tree/master/src) (for the implementation details of the VDOM).

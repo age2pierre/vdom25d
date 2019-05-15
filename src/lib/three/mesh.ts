@@ -24,7 +24,7 @@ const defaultProps: MeshProps = {
 }
 
 const driver: ElementDriver<Mesh, MeshProps, ThreeContext, Object3D> = {
-  factory: (attr, ctx) => {
+  factory: attr => {
     const ref = new Mesh()
     const fullAttr: GroupProps = {
       ...defaultProps,
@@ -35,7 +35,7 @@ const driver: ElementDriver<Mesh, MeshProps, ThreeContext, Object3D> = {
     }, ref)
   },
 
-  update: (mut_ref, key, newVal, oldVal) => {
+  update: (mut_ref, key, newVal) => {
     switch (key) {
       // keyable props
       case 'key':

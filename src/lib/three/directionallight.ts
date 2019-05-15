@@ -24,7 +24,7 @@ const driver: ElementDriver<
   ThreeContext,
   Object3D
 > = {
-  factory: (attr, ctx) => {
+  factory: (attr, _ctx) => {
     const ref = new DirectionalLight()
     const fullAttr: DirectionalLightProps = {
       ...defaultProps,
@@ -35,7 +35,7 @@ const driver: ElementDriver<
     }, ref)
   },
 
-  update: (mut_ref, key, newVal, oldVal) => {
+  update: (mut_ref, key, newVal, oldAttr) => {
     switch (key) {
       // keyable props
       case 'key':
@@ -47,7 +47,7 @@ const driver: ElementDriver<
           (newVal as Vector3).y,
           (newVal as Vector3).z,
         )
-        // TODO look at !! needs passing all the props !!
+        mut_ref.lookAt(oldAttr ? oldAttr.target : defaultProps.target)
         return mut_ref
       case 'rotation':
         mut_ref.rotation.set(
@@ -84,13 +84,9 @@ const driver: ElementDriver<
         mut_ref.lookAt(newVal as Vector3)
         return mut_ref
       case 'shadowProjector':
-        const cam = newVal as OrthographicCamera
-        mut_ref.shadowCameraBottom = cam.bottom
-        mut_ref.shadowCameraFar = cam.far
-        mut_ref.shadowCameraLeft = cam.left
-        mut_ref.shadowCameraRight = cam.right
-        mut_ref.shadowCameraTop = cam.top
-        mut_ref.shadowCameraNear = cam.near
+        // three js lib def out of date
+        // tslint:disable-next-line: no-object-mutation
+        ;(mut_ref as any).camera = newVal
         return mut_ref
       default:
         throw assertNever(key)

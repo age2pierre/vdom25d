@@ -13,6 +13,12 @@
     "no-var-keyword": true,
     "no-parameter-reassignment": true,
     "typedef": [true, "call-signature"],
+    "variable-name": [
+      true,
+      "allow-leading-underscore",
+      "allow-pascal-case",
+      "allow-snake-case"
+    ],
 
     // Immutability rules
     "readonly-keyword": [true, "ignore-local", { "ignore-prefix": "mut_" }],

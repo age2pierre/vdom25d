@@ -1,18 +1,14 @@
 import { PerspectiveCamera, WebGLRenderer } from 'three'
 import { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
-import clock from './drivers/clock'
+import clock, { Clock } from './drivers/clock'
 import keyboard from './drivers/keyboard'
 import createThreeContext, { ThreeContext } from './three/driver'
 import NullRenderer from './three/nullRenderer'
+import { noop } from './utils'
 import diffNode from './vdom/diffnode'
 import patch from './vdom/patch'
 import { VNative, VNode } from './vdom/vdom'
-
-export interface GridCoord {
-  readonly x: number
-  readonly y: number
-}
 
 export interface Context<T> {
   readonly refRoot: T
@@ -31,18 +27,20 @@ export interface Context<T> {
     key: string,
     tag: keyof JSX.IntrinsicElements | undefined,
     newVal: any,
-    oldVal: any,
+    oldAttr: any,
   ) => T
 }
 
-export default (idContainer = 'threeContainer', debug = false) => {
-  const renderer = debug
+export type Sources = Stream<[Clock, KeyboardEvent]>
+
+export default (idContainer = 'threeContainer', useNullRenderer = false) => {
+  const renderer = useNullRenderer
     ? new NullRenderer()
     : new WebGLRenderer({
         antialias: true,
         alpha: true,
       })
-  if (!debug && renderer instanceof WebGLRenderer) {
+  if (!useNullRenderer && renderer instanceof WebGLRenderer) {
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setSize(window.innerWidth, window.innerHeight)
     // tslint:disable-next-line: no-object-mutation
@@ -56,13 +54,13 @@ export default (idContainer = 'threeContainer', debug = false) => {
   const context: ThreeContext = createThreeContext(renderer)
 
   const camera = new PerspectiveCamera(
-    75,
+    30,
     window.innerWidth / window.innerHeight,
   )
 
-  camera.position.setZ(5)
+  camera.position.setZ(25)
 
-  if (!debug && renderer instanceof WebGLRenderer) {
+  if (!useNullRenderer && renderer instanceof WebGLRenderer) {
     window.addEventListener('resize', () => {
       // tslint:disable-next-line: no-object-mutation
       camera.aspect = window.innerWidth / window.innerHeight
@@ -72,8 +70,9 @@ export default (idContainer = 'threeContainer', debug = false) => {
   }
 
   const keyboard$ = keyboard()
-  const sources = clock().compose(sampleCombine(/*pick$, */ keyboard$))
-  let i = 0
+  const sources$: Sources = clock().compose(
+    sampleCombine(/*pick$, */ keyboard$),
+  )
 
   return {
     run: (vdom$: Stream<VNode>): void => {
@@ -91,9 +90,8 @@ export default (idContainer = 'threeContainer', debug = false) => {
           }
         }, context)
         .addListener({
-          next: ctx => {
-            // tslint:disable-next-line: no-console
-            console.log(`frame ${i++}`)
+          next: _ctx => {
+            noop()
           },
           error: err => {
             // tslint:disable-next-line: no-console
@@ -101,7 +99,7 @@ export default (idContainer = 'threeContainer', debug = false) => {
           },
         })
     },
-    sources,
+    sources: sources$,
     context,
   }
 }

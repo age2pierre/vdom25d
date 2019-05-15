@@ -61,7 +61,7 @@ export const defaultLightProps: LightBaseProps = {
 export interface AmbientLightProps extends LightBaseProps {}
 
 export interface DirectionalLightProps extends LightBaseProps {
-  readonly target: Vector3 // TODO convert it to Object3D with Vector3 position in worldspace
+  readonly target: Vector3
   readonly shadowProjector: OrthographicCamera // correspond to props DirectionalLightShadow.camera
 }
 

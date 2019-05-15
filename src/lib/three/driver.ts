@@ -31,7 +31,7 @@ export interface ElementDriver<Ref extends T, Props, C extends Context<T>, T> {
     ref: Ref,
     key: keyof Props,
     newVal: Props[keyof Props],
-    oldVal?: Props[keyof Props],
+    oldAttr?: Props,
     ctx?: C,
   ) => Ref
 }
@@ -114,10 +114,10 @@ export default function createThreeContext(
     removeChild: (parent, oldRef) => {
       return parent.remove(oldRef)
     },
-    insertAtIndex: (parent, index, ref) => {
+    insertAtIndex: (parent, _index, ref) => {
       return parent.add(ref)
     },
-    updateAttribute: (ref, key, tag, newVal, oldVal) => {
+    updateAttribute: (ref, key, tag, newVal, oldAttr) => {
       if (!tag) {
         throw new Error(
           'updateAttribute on VText is not implemented yet in Babylon driver',
@@ -135,6 +135,7 @@ export default function createThreeContext(
               ref as DirectionalLight,
               key as any,
               newVal,
+              oldAttr,
             )
           case undefined:
           case 'tag':

@@ -8,7 +8,7 @@ const defaultProps: GroupProps = {
 }
 
 const driver: ElementDriver<Group, GroupProps, ThreeContext, Object3D> = {
-  factory: (attr, ctx) => {
+  factory: attr => {
     const ref = new Group()
     const fullAttr: GroupProps = {
       ...defaultProps,
@@ -19,7 +19,7 @@ const driver: ElementDriver<Group, GroupProps, ThreeContext, Object3D> = {
     }, ref)
   },
 
-  update: (mut_ref, key, newVal, oldVal) => {
+  update: (mut_ref, key, newVal) => {
     switch (key) {
       // keyable props
       case 'key':
