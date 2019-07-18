@@ -1,15 +1,7 @@
-import { Vector3 } from 'three'
-import { range } from '../utils'
-import { h, VEmpty, VNative, VThunk } from '../vdom/vdom'
-import diffNode, {
-  diffAttributes,
-  InsertNode,
-  RemoveNode,
-  ReplaceNode,
-  SameNode,
-  SetAttribute,
-  UpdateChildren,
-} from './diffnode'
+import { Vector3 } from 'three';
+import { range } from '../utils';
+import { h, VEmpty, VNative, VThunk } from '../vdom/vdom';
+import diffNode, { diffAttributes, InsertNode, RemoveNode, ReplaceNode, SameNode, SetAttribute, UpdateChildren } from './diffnode';
 
 const vec0 = new Vector3(0, 0)
 const vec1 = new Vector3(1, 2)
@@ -62,11 +54,6 @@ describe('diffNode', () => {
     </group>
   )
   const node7 = <group>{null}</group>
-  const node8 = (
-    <group>
-      <mesh key="child2" position={vec0} />
-    </group>
-  )
 
   test('same node', () => {
     const changes = diffNode(node1, node1, '0')
